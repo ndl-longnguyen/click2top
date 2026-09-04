@@ -17,6 +17,32 @@ export async function POST(req: NextRequest) {
       const sanitizedUsername = username?.trim().slice(0, 20) || 'Player';
       const sanitizedCountry = country?.toUpperCase() || 'VN';
 
+      // 1. Check if another player already owns this username (case-insensitive)
+      const { data: existingUser } = await supabase
+        .from('profiles')
+        .select('id, username')
+        .ilike('username', sanitizedUsername)
+        .neq('id', userId)
+        .maybeSingle();
+
+      if (existingUser) {
+        const rand = Math.floor(10 + Math.random() * 90);
+        const suggestions = [
+          `${sanitizedUsername}_${sanitizedCountry}`,
+          `${sanitizedUsername}${rand}`,
+          `${sanitizedUsername}Pro`,
+        ];
+
+        return NextResponse.json(
+          {
+            error: 'USERNAME_TAKEN',
+            message: `Tên "${sanitizedUsername}" đã có người sử dụng. Vui lòng chọn tên khác!`,
+            suggestions,
+          },
+          { status: 409 }
+        );
+      }
+
       const { error } = await supabase.from('profiles').upsert({
         id: userId,
         username: sanitizedUsername,
@@ -26,6 +52,21 @@ export async function POST(req: NextRequest) {
       });
 
       if (error) {
+        if (error.code === '23505') {
+          const rand = Math.floor(10 + Math.random() * 90);
+          return NextResponse.json(
+            {
+              error: 'USERNAME_TAKEN',
+              message: `Tên "${sanitizedUsername}" đã có người sử dụng. Vui lòng chọn tên khác!`,
+              suggestions: [
+                `${sanitizedUsername}_${sanitizedCountry}`,
+                `${sanitizedUsername}${rand}`,
+                `${sanitizedUsername}Pro`,
+              ],
+            },
+            { status: 409 }
+          );
+        }
         console.error('Supabase profile update error:', error);
         return NextResponse.json({ error: error.message }, { status: 500 });
       }

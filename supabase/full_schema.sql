@@ -127,8 +127,7 @@ CREATE TABLE IF NOT EXISTS public.period_winners (
   UNIQUE(period_type, period_start)
 );
 
--- Performance Indexes
-CREATE INDEX IF NOT EXISTS idx_profiles_username ON public.profiles(username);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_profiles_username_lower ON public.profiles(LOWER(username));
 CREATE INDEX IF NOT EXISTS idx_profiles_country ON public.profiles(country);
 CREATE INDEX IF NOT EXISTS idx_player_stats_score ON public.player_stats(leaderboard_score DESC);
 CREATE INDEX IF NOT EXISTS idx_player_stats_current_energy ON public.player_stats(current_energy DESC);

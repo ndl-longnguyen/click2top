@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { PlayerStats, PlayerRankHistory } from '@/lib/types/game';
 import { NotificationService, NotificationPreferences } from '@/lib/notifications/notificationService';
 import { COUNTRIES, getCountryFlag, getCountryName, searchCountries } from '@/lib/config/countries';
-import { User, Bell, History, TrendingUp, TrendingDown, Minus, Save, Globe, Sparkles, Search, Check } from 'lucide-react';
+import { User, Bell, History, TrendingUp, TrendingDown, Minus, Save, Globe, Sparkles, Search, Check, AlertCircle } from 'lucide-react';
 
 interface ProfileViewProps {
   stats: PlayerStats;
@@ -43,29 +43,56 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
   // Personal rank history display (real season records)
   const [rankHistory] = useState<PlayerRankHistory[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [usernameSuggestions, setUsernameSuggestions] = useState<string[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    onUpdateProfile(username, shortDesc, country);
+    if (!username.trim()) return;
 
-    // Also persist to Supabase if authenticated
+    setIsSaving(true);
+    setErrorMessage(null);
+    setUsernameSuggestions([]);
+
     try {
-      await fetch('/api/profile/update', {
+      const res = await fetch('/api/profile/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId: stats.userId,
-          username,
+          username: username.trim(),
           shortDescription: shortDesc,
           country,
         }),
       });
-    } catch {
-      // Ignored for guest/offline
-    }
 
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 2500);
+      const data = await res.json();
+
+      if (!res.ok || data.error) {
+        if (data.error === 'USERNAME_TAKEN') {
+          setErrorMessage(data.message || `Tên "${username}" đã có người sử dụng. Vui lòng chọn tên khác!`);
+          if (Array.isArray(data.suggestions)) {
+            setUsernameSuggestions(data.suggestions);
+          }
+        } else {
+          setErrorMessage(data.error || 'Failed to save profile changes');
+        }
+        setIsSaving(false);
+        return;
+      }
+
+      onUpdateProfile(username.trim(), shortDesc, country);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 2500);
+    } catch {
+      // Offline fallback
+      onUpdateProfile(username.trim(), shortDesc, country);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 2500);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const [isRegisteringPush, setIsRegisteringPush] = useState(false);
@@ -255,6 +282,39 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             </div>
           </div>
 
+          {/* Error Banner with Smart Suggestions */}
+          {errorMessage && (
+            <div className="p-4 rounded-2xl bg-red-500/15 border border-red-500/30 text-red-300 text-xs sm:text-sm space-y-2.5 animate-fade-in">
+              <div className="flex items-center gap-2 font-bold text-red-400">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{errorMessage}</span>
+              </div>
+              {usernameSuggestions.length > 0 && (
+                <div className="space-y-1.5 pt-1.5 border-t border-red-500/20">
+                  <p className="text-[11px] text-slate-300 font-semibold">
+                    💡 Gợi ý tên khả dụng (bấm để chọn nhanh):
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {usernameSuggestions.map((sug) => (
+                      <button
+                        key={sug}
+                        type="button"
+                        onClick={() => {
+                          setUsername(sug);
+                          setErrorMessage(null);
+                          setUsernameSuggestions([]);
+                        }}
+                        className="px-2.5 py-1 rounded-lg bg-red-500/20 hover:bg-amber-500/20 hover:text-amber-300 border border-red-500/40 text-red-200 font-mono font-bold text-xs transition-all cursor-pointer active:scale-95"
+                      >
+                        +{sug}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Submit Button & Confirmation */}
           <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
             <div className="flex items-center gap-2">
@@ -267,10 +327,11 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             </div>
             <button
               type="submit"
-              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs sm:text-sm tracking-wide shadow-[0_0_15px_rgba(245,158,11,0.5)] transition-all active:scale-95 cursor-pointer"
+              disabled={isSaving}
+              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs sm:text-sm tracking-wide shadow-[0_0_15px_rgba(245,158,11,0.5)] transition-all active:scale-95 cursor-pointer disabled:opacity-50"
             >
               <Save className="w-4 h-4" />
-              <span>Save Profile Changes</span>
+              <span>{isSaving ? 'Checking & Saving...' : 'Save Profile Changes'}</span>
             </button>
           </div>
         </form>

@@ -12,10 +12,23 @@ export async function POST(req: NextRequest) {
 
     const supabase = createAdminSupabaseClient() || createServerSupabaseClient();
     if (supabase) {
+      // Ensure chosen username is unique across all profiles
+      let chosenUsername = (targetUsername || guestStats.username || 'Player').trim().slice(0, 20);
+      const { data: nameClash } = await supabase
+        .from('profiles')
+        .select('id')
+        .ilike('username', chosenUsername)
+        .neq('id', targetUserId)
+        .maybeSingle();
+
+      if (nameClash) {
+        chosenUsername = `${chosenUsername.slice(0, 14)}_${Math.floor(100 + Math.random() * 900)}`;
+      }
+
       // Upsert profile
       await supabase.from('profiles').upsert({
         id: targetUserId,
-        username: targetUsername || guestStats.username || 'Player',
+        username: chosenUsername,
         short_description: guestStats.shortDescription || 'Clicking to the top!',
         country: guestStats.country || 'VN',
         updated_at: new Date().toISOString(),

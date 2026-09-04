@@ -19,19 +19,37 @@ export const ClaimAccountModal: React.FC<ClaimAccountModalProps> = ({
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [statusMessage, setStatusMessage] = useState<{ text: string; isError?: boolean } | null>(null);
+  const [statusMessage, setStatusMessage] = useState<{ text: string; isError?: boolean; suggestions?: string[] } | null>(null);
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username.trim()) {
+    const cleanUsername = username.trim();
+    if (!cleanUsername) {
       setStatusMessage({ text: 'Please enter a username', isError: true });
       return;
     }
 
     setLoading(true);
     setStatusMessage(null);
+
+    // 1. Validate username uniqueness first
+    try {
+      const checkRes = await fetch(`/api/profile/check-username?username=${encodeURIComponent(cleanUsername)}`);
+      const checkData = await checkRes.json();
+      if (checkData.available === false) {
+        setStatusMessage({
+          text: checkData.message || `Tên "${cleanUsername}" đã có người sử dụng.`,
+          isError: true,
+          suggestions: checkData.suggestions,
+        });
+        setLoading(false);
+        return;
+      }
+    } catch {
+      // Offline fallback
+    }
 
     const supabase = getSupabaseClient();
 
@@ -147,13 +165,30 @@ export const ClaimAccountModal: React.FC<ClaimAccountModalProps> = ({
 
           {statusMessage && (
             <div
-              className={`p-2.5 rounded-xl text-xs font-bold text-center ${
+              className={`p-3 rounded-2xl text-xs font-bold text-center space-y-2 ${
                 statusMessage.isError
-                  ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                  ? 'bg-red-500/20 text-red-300 border border-red-500/30'
                   : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
               }`}
             >
-              {statusMessage.text}
+              <div>{statusMessage.text}</div>
+              {statusMessage.suggestions && statusMessage.suggestions.length > 0 && (
+                <div className="flex flex-wrap items-center justify-center gap-1.5 pt-1">
+                  {statusMessage.suggestions.map((sug) => (
+                    <button
+                      key={sug}
+                      type="button"
+                      onClick={() => {
+                        setUsername(sug);
+                        setStatusMessage(null);
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-red-500/20 hover:bg-amber-500/20 hover:text-amber-300 text-white font-mono text-[11px] border border-red-500/40 cursor-pointer active:scale-95 transition-all"
+                    >
+                      +{sug}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
