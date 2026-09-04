@@ -80,6 +80,12 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+  verification: {
+    google: '2n_hKWDM5r9dlRixMDRAsSCW6hbadPKFb5ccKFfG3i0',
+  },
+  other: {
+    'google-adsense-account': 'ca-pub-9166964727480227',
+  },
 };
 
 export const viewport: Viewport = {
@@ -130,6 +136,8 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark h-full">
       <head>
+        <meta name="google-adsense-account" content="ca-pub-9166964727480227" />
+        <meta name="google-site-verification" content="2n_hKWDM5r9dlRixMDRAsSCW6hbadPKFb5ccKFfG3i0" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
         <script
           type="application/ld+json"
