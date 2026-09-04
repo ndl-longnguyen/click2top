@@ -129,7 +129,7 @@ export function useGameStore() {
         const initialObjs: ArenaObject[] = [];
         for (let i = 0; i < GAME_CONFIG.arena.minObjects + 2; i++) {
           const currentBooms = initialObjs.filter((o) => o.type === 'boom').length;
-          const isBoom = currentBooms < 1 && Math.random() < GAME_CONFIG.arena.boomChance;
+          const isBoom = currentBooms < 3 && Math.random() < GAME_CONFIG.arena.boomChance;
           const pos = generateRandomPosition(initialObjs);
           initialObjs.push({
             id: 'obj_' + Math.random().toString(36).substring(2, 9),

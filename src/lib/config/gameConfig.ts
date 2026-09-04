@@ -22,19 +22,19 @@ export const GAME_CONFIG = {
   },
 
   arena: {
-    maxObjects: 7,
-    minObjects: 4,
-    spawnIntervalMs: 500,
-    boomChance: 0.12, // ~12% boom chance
-    maxActiveBooms: 2, // Maximum 2 bombs on screen at any time - never clog the arena!
-    minActiveCoins: 3, // Always guarantee at least 3 coins on the board
-    boomLifespanMs: 4500, // Bombs safely defuse after 4.5s if player successfully dodges them
+    maxObjects: 8,
+    minObjects: 5,
+    spawnIntervalMs: 350,
+    boomChance: 0.35, // ~35% boom chance for intense action and obstacle dodging
+    maxActiveBooms: 4, // Up to 4 bombs concurrently on screen
+    minActiveCoins: 2, // Guarantee at least 2 active coins on screen
+    boomLifespanMs: 5000, // Bombs safely defuse after 5s
     safeZone: {
       minX: 8,
       maxX: 92,
       minY: 12,
       maxY: 88,
-      minDistancePercentage: 14, // prevent overlapping
+      minDistancePercentage: 13, // prevent overlapping
     },
   },
 
