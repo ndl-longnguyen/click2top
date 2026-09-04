@@ -131,6 +131,7 @@ CREATE TABLE IF NOT EXISTS public.period_winners (
 CREATE INDEX IF NOT EXISTS idx_profiles_username ON public.profiles(username);
 CREATE INDEX IF NOT EXISTS idx_profiles_country ON public.profiles(country);
 CREATE INDEX IF NOT EXISTS idx_player_stats_score ON public.player_stats(leaderboard_score DESC);
+CREATE INDEX IF NOT EXISTS idx_player_stats_current_energy ON public.player_stats(current_energy DESC);
 CREATE INDEX IF NOT EXISTS idx_leaderboard_query ON public.leaderboard_entries(period_type, period_start, score DESC);
 CREATE INDEX IF NOT EXISTS idx_player_rank_history_user ON public.player_rank_history(user_id, period_start DESC);
 CREATE INDEX IF NOT EXISTS idx_period_winners_period ON public.period_winners(period_type, period_start DESC);

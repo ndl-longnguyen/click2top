@@ -169,13 +169,16 @@ export function useGameStore() {
     const interval = setInterval(() => {
       const passivePerSec = calculatePassiveProduction(statsRef.current.items);
       if (passivePerSec > 0) {
-        setStats((prev) => ({
-          ...prev,
-          currentEnergy: prev.currentEnergy + passivePerSec,
-          totalEarnedEnergy: prev.totalEarnedEnergy + passivePerSec,
-          leaderboardScore: prev.leaderboardScore + passivePerSec,
-          lastActiveAt: Date.now(),
-        }));
+        setStats((prev) => {
+          const nextEnergy = prev.currentEnergy + passivePerSec;
+          return {
+            ...prev,
+            currentEnergy: nextEnergy,
+            totalEarnedEnergy: prev.totalEarnedEnergy + passivePerSec,
+            leaderboardScore: nextEnergy,
+            lastActiveAt: Date.now(),
+          };
+        });
       }
     }, 1000);
 
@@ -354,11 +357,12 @@ export function useGameStore() {
 
       setStats((prev) => {
         const nextCombo = prev.currentCombo + 1;
+        const nextEnergy = prev.currentEnergy + totalReward;
         return {
           ...prev,
-          currentEnergy: prev.currentEnergy + totalReward,
+          currentEnergy: nextEnergy,
           totalEarnedEnergy: prev.totalEarnedEnergy + totalReward,
-          leaderboardScore: prev.leaderboardScore + totalReward,
+          leaderboardScore: nextEnergy,
           currentCombo: nextCombo,
           bestCombo: Math.max(prev.bestCombo, nextCombo),
           lastActiveAt: Date.now(),
@@ -406,12 +410,16 @@ export function useGameStore() {
 
       setArenaObjects((prev) => prev.filter((o) => o.id !== objectId));
 
-      setStats((prev) => ({
-        ...prev,
-        currentEnergy: Math.max(0, prev.currentEnergy - penalty),
-        currentCombo: 0,
-        lastActiveAt: Date.now(),
-      }));
+      setStats((prev) => {
+        const nextEnergy = Math.max(0, prev.currentEnergy - penalty);
+        return {
+          ...prev,
+          currentEnergy: nextEnergy,
+          leaderboardScore: nextEnergy,
+          currentCombo: 0,
+          lastActiveAt: Date.now(),
+        };
+      });
 
       clickBatchRef.current.booms += 1;
 
@@ -433,15 +441,19 @@ export function useGameStore() {
       return { success: false, message: `Not enough Energy! Need ${price.toLocaleString()} ⚡` };
     }
 
-    setStats((prev) => ({
-      ...prev,
-      currentEnergy: prev.currentEnergy - price,
-      items: {
-        ...prev.items,
-        [item.slug]: (prev.items[item.slug] || 0) + 1,
-      },
-      lastActiveAt: Date.now(),
-    }));
+    setStats((prev) => {
+      const nextEnergy = prev.currentEnergy - price;
+      return {
+        ...prev,
+        currentEnergy: nextEnergy,
+        leaderboardScore: nextEnergy,
+        items: {
+          ...prev.items,
+          [item.slug]: (prev.items[item.slug] || 0) + 1,
+        },
+        lastActiveAt: Date.now(),
+      };
+    });
 
     soundEffects.playUpgrade();
     return { success: true };
@@ -453,13 +465,16 @@ export function useGameStore() {
       setOfflineModalOpen(false);
       return;
     }
-    setStats((prev) => ({
-      ...prev,
-      currentEnergy: prev.currentEnergy + offlineEarned,
-      totalEarnedEnergy: prev.totalEarnedEnergy + offlineEarned,
-      leaderboardScore: prev.leaderboardScore + offlineEarned,
-      lastActiveAt: Date.now(),
-    }));
+    setStats((prev) => {
+      const nextEnergy = prev.currentEnergy + offlineEarned;
+      return {
+        ...prev,
+        currentEnergy: nextEnergy,
+        totalEarnedEnergy: prev.totalEarnedEnergy + offlineEarned,
+        leaderboardScore: nextEnergy,
+        lastActiveAt: Date.now(),
+      };
+    });
     soundEffects.playUpgrade();
     setOfflineEarned(0);
     setOfflineModalOpen(false);

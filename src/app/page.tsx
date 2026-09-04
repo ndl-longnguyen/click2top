@@ -162,7 +162,7 @@ export default function Home() {
         {activeTab === 'leaderboard' && (
           <LeaderboardView
             currentUserId={stats.userId}
-            currentUserScore={stats.leaderboardScore}
+            currentUserScore={stats.currentEnergy}
             currentCountry={stats.country}
           />
         )}

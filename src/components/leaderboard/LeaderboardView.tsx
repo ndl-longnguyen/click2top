@@ -187,7 +187,7 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
                   NATIONS CUP — WORLD CHAMPIONSHIP
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-xl leading-relaxed">
-                  Total energy produced by all clickers representing the same nation is aggregated. Click to lead your country to world dominance!
+                  Current energy held by all clickers representing the same nation is aggregated. Click to lead your country to world dominance!
                 </p>
               </div>
 
@@ -335,7 +335,7 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
               <span className="col-span-2 sm:col-span-1 text-center">Rank</span>
               <span className="col-span-6 sm:col-span-5 truncate">Nation</span>
               <span className="hidden sm:block sm:col-span-3 text-center">National MVP</span>
-              <span className="col-span-4 sm:col-span-3 text-right">Total Energy</span>
+              <span className="col-span-4 sm:col-span-3 text-right">Current Energy</span>
             </div>
 
             <div className="divide-y divide-white/5">
@@ -573,7 +573,7 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
                   <span className="col-span-2 sm:col-span-1 text-center">Rank</span>
                   <span className="col-span-6 sm:col-span-7">Player</span>
                   <span className="hidden sm:block sm:col-span-2 text-center">Best Combo</span>
-                  <span className="col-span-4 sm:col-span-2 text-right">Score</span>
+                  <span className="col-span-4 sm:col-span-2 text-right">Current Energy</span>
                 </div>
 
                 {entries.length === 0 ? (

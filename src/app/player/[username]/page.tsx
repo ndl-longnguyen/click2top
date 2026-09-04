@@ -67,12 +67,12 @@ export default async function PlayerProfilePage({ params }: PageProps) {
       country = profile.country || country;
       const { data: stats } = await supabase
         .from('player_stats')
-        .select('leaderboard_score, best_combo')
+        .select('current_energy, leaderboard_score, best_combo')
         .eq('user_id', profile.id)
         .maybeSingle();
 
       if (stats) {
-        score = stats.leaderboard_score || score;
+        score = Number(stats.current_energy ?? stats.leaderboard_score ?? score);
         bestCombo = stats.best_combo || bestCombo;
       }
     }

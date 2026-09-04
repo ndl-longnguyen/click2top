@@ -17,11 +17,11 @@ export async function GET(req: NextRequest) {
     let topOneWinner: PeriodWinner | null = null;
 
     if (supabase) {
-      // Query database if connected
+      // Query database if connected (Ranked by current spendable energy in hand)
       const { data: dbEntries } = await supabase
         .from('player_stats')
-        .select('user_id, leaderboard_score, best_combo, profiles(username, short_description, avatar_url, country)')
-        .order('leaderboard_score', { ascending: false })
+        .select('user_id, current_energy, leaderboard_score, best_combo, profiles(username, short_description, avatar_url, country)')
+        .order('current_energy', { ascending: false })
         .limit(100);
 
       if (dbEntries && dbEntries.length > 0) {
@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
             shortDescription: profile?.short_description || 'Clicker Champion',
             country: (profile?.country || 'VN').toUpperCase(),
             avatarUrl: profile?.avatar_url,
-            score: Number(row.leaderboard_score),
+            score: Number(row.current_energy ?? row.leaderboard_score ?? 0),
             bestCombo: row.best_combo,
             isCurrentUser: row.user_id === userId,
           };
@@ -67,17 +67,17 @@ export async function GET(req: NextRequest) {
 
     // No fake/demo data seeded. Only real players from database or active session.
 
-    // Integrate or calculate the current user's live score & country representation
-    if (userScore > 0) {
+    // Integrate or calculate the current user's live score & country representation (Current Energy)
+    if (userScore >= 0 && userId) {
       const existingUserIdx = allPlayers.findIndex((e) => e.userId === userId);
       if (existingUserIdx !== -1) {
-        allPlayers[existingUserIdx].score = Math.max(allPlayers[existingUserIdx].score, userScore);
+        allPlayers[existingUserIdx].score = userScore;
         allPlayers[existingUserIdx].isCurrentUser = true;
         allPlayers[existingUserIdx].country = userCountry;
-      } else {
+      } else if (userScore > 0) {
         allPlayers.push({
           rank: 0,
-          userId: userId || 'guest_current',
+          userId: userId,
           username: 'You',
           shortDescription: 'Climbing the leaderboard!',
           country: userCountry,
