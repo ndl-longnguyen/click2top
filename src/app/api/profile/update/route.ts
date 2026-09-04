@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json(
           {
             error: 'USERNAME_TAKEN',
-            message: `Tên "${sanitizedUsername}" đã có người sử dụng. Vui lòng chọn tên khác!`,
+            message: `Username "${sanitizedUsername}" is already taken. Please choose another!`,
             suggestions,
           },
           { status: 409 }
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
       const { error } = await supabase.from('profiles').upsert({
         id: userId,
         username: sanitizedUsername,
-        short_description: shortDescription?.trim().slice(0, 100) || '',
+        short_description: shortDescription?.trim().slice(0, 250) || '',
         country: sanitizedCountry,
         updated_at: new Date().toISOString(),
       });
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
           return NextResponse.json(
             {
               error: 'USERNAME_TAKEN',
-              message: `Tên "${sanitizedUsername}" đã có người sử dụng. Vui lòng chọn tên khác!`,
+              message: `Username "${sanitizedUsername}" is already taken. Please choose another!`,
               suggestions: [
                 `${sanitizedUsername}_${sanitizedCountry}`,
                 `${sanitizedUsername}${rand}`,

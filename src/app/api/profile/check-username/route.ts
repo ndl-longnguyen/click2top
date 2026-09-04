@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
       const rand = Math.floor(10 + Math.random() * 90);
       return NextResponse.json({
         available: false,
-        message: `Tên "${username}" đã có người sử dụng. Vui lòng chọn tên khác!`,
+        message: `Username "${username}" is already taken. Please choose another!`,
         suggestions: [
           `${username}_VN`,
           `${username}${rand}`,

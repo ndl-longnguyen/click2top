@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Flame, ChevronUp, Crown, ExternalLink, RefreshCw, Globe, Swords, Filter } from 'lucide-react';
+import { Flame, ChevronUp, Crown, ExternalLink, RefreshCw, Globe, Swords, Filter, Sparkles, Megaphone } from 'lucide-react';
 import { LeaderboardEntry, PeriodWinner, CompetitorStatus, CountryStanding, NationalRivalryInfo } from '@/lib/types/game';
 import { COUNTRIES, getCountryFlag, getCountryName } from '@/lib/config/countries';
 import Link from 'next/link';
@@ -590,57 +590,82 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
                     return (
                       <div
                         key={player.userId}
-                        className={`px-3 sm:px-4 py-3 sm:py-3.5 grid grid-cols-12 gap-1.5 sm:gap-2 items-center transition-colors ${
-                          isSelf
+                        className={`px-3 sm:px-4 py-3 sm:py-3.5 transition-all ${
+                          isFirst
+                            ? 'rounded-2xl border-2 border-amber-400/70 bg-gradient-to-br from-amber-500/20 via-amber-950/30 to-slate-950 shadow-[0_0_25px_rgba(245,158,11,0.25)] my-2.5'
+                            : isSelf
                             ? 'bg-sky-500/15 border-l-4 border-sky-400'
-                            : isFirst
-                            ? 'bg-amber-500/10'
                             : 'hover:bg-white/5'
                         }`}
                       >
-                        {/* Rank Badge */}
-                        <div className="col-span-2 sm:col-span-1 text-center font-black">
-                          {isFirst && <span className="text-xl sm:text-2xl">🥇</span>}
-                          {isSecond && <span className="text-xl sm:text-2xl">🥈</span>}
-                          {isThird && <span className="text-xl sm:text-2xl">🥉</span>}
-                          {!isFirst && !isSecond && !isThird && (
-                            <span className="text-slate-400 font-mono text-xs sm:text-sm">#{player.rank}</span>
-                          )}
-                        </div>
-
-                        {/* Player Name & Bio */}
-                        <div className="col-span-6 sm:col-span-7 pr-1 min-w-0">
-                          <Link
-                            href={`/player/${encodeURIComponent(player.username)}`}
-                            className="font-bold text-xs sm:text-base text-white hover:text-amber-400 transition-colors flex items-center gap-1.5 min-w-0"
-                          >
-                            <span className="text-base shrink-0" title={getCountryName(player.country)}>
-                              {getCountryFlag(player.country)}
-                            </span>
-                            <span className="truncate">{player.username}</span>
-                            {isSelf && (
-                              <span className="text-[9px] font-extrabold uppercase bg-sky-500 text-slate-950 px-1 py-0.2 rounded shrink-0">
-                                YOU
-                              </span>
+                        <div className="grid grid-cols-12 gap-1.5 sm:gap-2 items-center">
+                          {/* Rank Badge */}
+                          <div className="col-span-2 sm:col-span-1 text-center font-black">
+                            {isFirst && <span className="text-xl sm:text-2xl animate-pulse">🥇</span>}
+                            {isSecond && <span className="text-xl sm:text-2xl">🥈</span>}
+                            {isThird && <span className="text-xl sm:text-2xl">🥉</span>}
+                            {!isFirst && !isSecond && !isThird && (
+                              <span className="text-slate-400 font-mono text-xs sm:text-sm">#{player.rank}</span>
                             )}
-                          </Link>
-                          <p className="text-[10px] sm:text-xs text-slate-400 truncate max-w-full mt-0.5">
-                            {player.shortDescription}
-                          </p>
-                        </div>
+                          </div>
 
-                        {/* Best Combo */}
-                        <div className="hidden sm:flex sm:col-span-2 items-center justify-center gap-1 text-xs font-mono font-bold text-amber-400">
-                          <Flame className="w-3.5 h-3.5" />
-                          <span>×{player.bestCombo || 1}</span>
-                        </div>
+                          {/* Player Name */}
+                          <div className="col-span-6 sm:col-span-7 pr-1 min-w-0">
+                            <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                              <Link
+                                href={`/player/${encodeURIComponent(player.username)}`}
+                                className="font-black text-xs sm:text-base text-white hover:text-amber-400 transition-colors flex items-center gap-1.5 min-w-0"
+                              >
+                                <span className="text-base shrink-0" title={getCountryName(player.country)}>
+                                  {getCountryFlag(player.country)}
+                                </span>
+                                <span className="truncate">{player.username}</span>
+                              </Link>
+                              {isSelf && (
+                                <span className="text-[9px] font-extrabold uppercase bg-sky-500 text-slate-950 px-1 py-0.2 rounded shrink-0">
+                                  YOU
+                                </span>
+                              )}
+                              {isFirst && (
+                                <span className="text-[9px] font-black uppercase tracking-wider bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 px-1.5 py-0.5 rounded shadow-sm shrink-0 flex items-center gap-1">
+                                  <Crown className="w-2.5 h-2.5" />
+                                  #1 CHAMPION
+                                </span>
+                              )}
+                            </div>
+                          </div>
 
-                        {/* Score */}
-                        <div className="col-span-4 sm:col-span-2 text-right min-w-0">
-                          <div className="text-xs sm:text-sm font-black text-sky-300 font-mono truncate">
-                            {player.score.toLocaleString()} ⚡
+                          {/* Best Combo */}
+                          <div className="hidden sm:flex sm:col-span-2 items-center justify-center gap-1 text-xs font-mono font-bold text-amber-400">
+                            <Flame className="w-3.5 h-3.5" />
+                            <span>×{player.bestCombo || 1}</span>
+                          </div>
+
+                          {/* Score */}
+                          <div className="col-span-4 sm:col-span-2 text-right min-w-0">
+                            <div className={`text-xs sm:text-sm font-black font-mono truncate ${isFirst ? 'text-amber-300' : 'text-sky-300'}`}>
+                              {player.score.toLocaleString()} ⚡
+                            </div>
                           </div>
                         </div>
+
+                        {/* Top 1 Exclusive Full Bio & Brand Showcase Billboard */}
+                        {isFirst && (
+                          <div className="mt-2.5 sm:mt-3 p-3 sm:p-3.5 rounded-xl bg-black/60 border border-amber-400/40 shadow-inner space-y-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-amber-300">
+                                <Megaphone className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                                <span>#1 Champion Brand Billboard</span>
+                              </span>
+                              <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 shadow-sm">
+                                VIP SPOTLIGHT
+                              </span>
+                            </div>
+                            <p className="text-xs sm:text-sm font-semibold text-amber-100/95 leading-relaxed break-words whitespace-pre-wrap selection:bg-amber-400 selection:text-slate-950">
+                              {player.shortDescription || 'Crowned #1 Champion of the World! Reach Top 1 to broadcast your brand, community link, or slogan here!'}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     );
                   })

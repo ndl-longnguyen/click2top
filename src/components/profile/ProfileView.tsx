@@ -71,7 +71,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
       if (!res.ok || data.error) {
         if (data.error === 'USERNAME_TAKEN') {
-          setErrorMessage(data.message || `Tên "${username}" đã có người sử dụng. Vui lòng chọn tên khác!`);
+          setErrorMessage(data.message || `Username "${username}" is already taken. Please choose another!`);
           if (Array.isArray(data.suggestions)) {
             setUsernameSuggestions(data.suggestions);
           }
@@ -266,19 +266,20 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
           {/* Bio / Motto Input */}
           <div>
-            <label className="block text-xs uppercase font-bold text-slate-400 mb-1.5">
-              Player Bio / Battle Cry (Max 100 characters)
+            <label className="block text-xs uppercase font-bold text-slate-400 mb-1.5 flex items-center justify-between">
+              <span>Player Bio & Brand Showcase (Max 250 chars)</span>
+              <span className="text-amber-400 text-[10px] font-mono">👑 Broadcasted in full when #1</span>
             </label>
             <textarea
               value={shortDesc}
-              maxLength={100}
-              rows={2}
+              maxLength={250}
+              rows={3}
               onChange={(e) => setShortDesc(e.target.value)}
               className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white focus:outline-none focus:border-amber-400 text-sm resize-none"
-              placeholder="e.g. Clicking for national glory and claiming #1! ⚡"
+              placeholder="e.g. 👑 #1 Champion | Follow @mybrand on X | Visit click2top.app for special events! ⚡"
             />
             <div className="text-right text-[11px] text-slate-500 font-mono mt-1">
-              {shortDesc.length}/100
+              {shortDesc.length}/250
             </div>
           </div>
 
@@ -292,7 +293,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               {usernameSuggestions.length > 0 && (
                 <div className="space-y-1.5 pt-1.5 border-t border-red-500/20">
                   <p className="text-[11px] text-slate-300 font-semibold">
-                    💡 Gợi ý tên khả dụng (bấm để chọn nhanh):
+                    💡 Available suggestions (click to auto-fill):
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {usernameSuggestions.map((sug) => (

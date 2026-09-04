@@ -40,7 +40,7 @@ export const ClaimAccountModal: React.FC<ClaimAccountModalProps> = ({
       const checkData = await checkRes.json();
       if (checkData.available === false) {
         setStatusMessage({
-          text: checkData.message || `Tên "${cleanUsername}" đã có người sử dụng.`,
+          text: checkData.message || `Username "${cleanUsername}" is already taken. Please choose another!`,
           isError: true,
           suggestions: checkData.suggestions,
         });
