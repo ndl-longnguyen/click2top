@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { ArenaObject, FloatingTextItem } from '@/lib/types/game';
 import { FloatingText } from './FloatingText';
 import { Flame } from 'lucide-react';
@@ -24,12 +24,40 @@ export const GameArena: React.FC<GameArenaProps> = ({
   onBoomClick,
 }) => {
   const [shaking, setShaking] = useState(false);
+  const recentInteractionsRef = useRef<Map<string, number>>(new Map());
 
-  const handleBoomInteract = (id: string, x: number, y: number) => {
+  const handleBoomInteract = useCallback((id: string, x: number, y: number) => {
     setShaking(true);
     setTimeout(() => setShaking(false), 450);
     onBoomClick(id, x, y);
-  };
+  }, [onBoomClick]);
+
+  const handleInteract = useCallback((e: React.SyntheticEvent, id: string, x: number, y: number, isCoin: boolean) => {
+    e.stopPropagation();
+
+    // Prevent default touch gestures (pinch-zoom/drag) from interfering with arcade tapping
+    if (e.cancelable && ('touches' in e.nativeEvent || 'pointerType' in e.nativeEvent)) {
+      e.preventDefault();
+    }
+
+    const now = Date.now();
+    const lastTime = recentInteractionsRef.current.get(id) || 0;
+    // Debounce duplicate events on the same object within 150ms
+    if (now - lastTime < 150) {
+      return;
+    }
+    recentInteractionsRef.current.set(id, now);
+
+    if (recentInteractionsRef.current.size > 50) {
+      recentInteractionsRef.current.clear();
+    }
+
+    if (isCoin) {
+      onCoinClick(id, x, y);
+    } else {
+      handleBoomInteract(id, x, y);
+    }
+  }, [onCoinClick, handleBoomInteract]);
 
   // Combo multiplier lookup
   let comboMult = 1.0;
@@ -79,7 +107,7 @@ export const GameArena: React.FC<GameArenaProps> = ({
       {/* Playable Arena Field */}
       <div
         id="playable-arena-field"
-        className={`relative flex-1 w-full h-full cursor-crosshair ${
+        className={`relative flex-1 w-full h-full cursor-crosshair touch-none select-none ${
           shaking ? 'animate-screen-shake' : ''
         }`}
       >
@@ -92,16 +120,11 @@ export const GameArena: React.FC<GameArenaProps> = ({
           return (
             <button
               key={obj.id}
-              onClick={(e) => {
-                e.stopPropagation();
-                if (isCoin) {
-                  onCoinClick(obj.id, obj.x, obj.y);
-                } else {
-                  handleBoomInteract(obj.id, obj.x, obj.y);
-                }
+              onPointerDown={(e) => {
+                handleInteract(e, obj.id, obj.x, obj.y, isCoin);
               }}
-              onTouchStart={(e) => {
-                e.stopPropagation();
+              onClick={(e) => {
+                handleInteract(e, obj.id, obj.x, obj.y, isCoin);
               }}
               style={{
                 left: `${obj.x}%`,
@@ -109,7 +132,7 @@ export const GameArena: React.FC<GameArenaProps> = ({
                 transform: 'translate(-50%, -50%)',
               }}
               aria-label={isCoin ? 'Collect Coin' : 'Avoid Boom'}
-              className={`absolute group cursor-pointer focus:outline-none transition-transform duration-100 active:scale-90 active:opacity-75 ${
+              className={`absolute group cursor-pointer focus:outline-none transition-transform duration-75 active:scale-90 active:opacity-80 touch-none select-none before:absolute before:-inset-3.5 before:content-[''] before:rounded-full before:z-10 ${
                 isCoin ? 'animate-coin-pulse' : 'animate-boom-pulse'
               }`}
             >

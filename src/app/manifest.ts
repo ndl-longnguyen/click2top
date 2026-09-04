@@ -5,11 +5,14 @@ export default function manifest(): MetadataRoute.Manifest {
     name: 'Click 2 Top — Competitive Arcade',
     short_name: 'Click2Top',
     description: 'Fast-paced competitive clicker game. Click coins, dodge booms, level up generators, and conquer the leaderboard!',
+    id: '/',
     start_url: '/',
+    scope: '/',
     display: 'standalone',
     background_color: '#090d16',
     theme_color: '#f59e0b',
     orientation: 'portrait',
+    prefer_related_applications: false,
     icons: [
       {
         src: '/icon-192.png',

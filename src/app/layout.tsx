@@ -33,6 +33,11 @@ export const metadata: Metadata = {
   category: 'games',
   classification: 'Competitive Arcade Game, Incremental Game',
   manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Click 2 Top',
+  },
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },
@@ -142,6 +147,10 @@ export default function RootLayout({
       <head>
         <meta name="google-adsense-account" content="ca-pub-9166964727480227" />
         <meta name="google-site-verification" content="2n_hKWDM5r9dlRixMDRAsSCW6hbadPKFb5ccKFfG3i0" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Click 2 Top" />
+        <meta name="mobile-web-app-capable" content="yes" />
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
