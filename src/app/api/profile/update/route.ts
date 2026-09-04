@@ -13,12 +13,15 @@ export async function POST(req: NextRequest) {
     const authHeader = req.headers.get('authorization')?.replace('Bearer ', '');
     const supabase = createServerSupabaseClient(authHeader);
 
-    if (supabase && !userId.startsWith('guest_')) {
+    if (supabase) {
+      const sanitizedUsername = username?.trim().slice(0, 20) || 'Player';
+      const sanitizedCountry = country?.toUpperCase() || 'VN';
+
       const { error } = await supabase.from('profiles').upsert({
         id: userId,
-        username: username?.trim().slice(0, 20) || 'Player',
+        username: sanitizedUsername,
         short_description: shortDescription?.trim().slice(0, 100) || '',
-        country: country?.toUpperCase() || 'VN',
+        country: sanitizedCountry,
         updated_at: new Date().toISOString(),
       });
 
@@ -26,6 +29,19 @@ export async function POST(req: NextRequest) {
         console.error('Supabase profile update error:', error);
         return NextResponse.json({ error: error.message }, { status: 500 });
       }
+
+      // Ensure stats record exists so leaderboard & nations cup queries link smoothly
+      await supabase.from('player_stats').upsert(
+        {
+          user_id: userId,
+          current_energy: 0,
+          total_earned_energy: 0,
+          leaderboard_score: 0,
+          last_active_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'user_id', ignoreDuplicates: true }
+      );
     }
 
     return NextResponse.json({

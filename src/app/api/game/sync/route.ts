@@ -5,7 +5,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { userId, isGuest, clickBatch, currentEnergy, totalEarnedEnergy, leaderboardScore, clientTimestamp } = body;
+    const { userId, username, country, clickBatch, currentEnergy, totalEarnedEnergy, leaderboardScore, clientTimestamp } = body;
 
     if (!userId) {
       return NextResponse.json({ error: 'Missing userId' }, { status: 400 });
@@ -23,11 +23,23 @@ export async function POST(req: NextRequest) {
       console.warn(`[AntiCheat Warning] User ${userId}: ${validation.reason}`);
     }
 
-    // If Supabase is configured and not a guest, persist to DB
+    // Persist to Supabase DB so player score immediately ranks on Global & Nations Cup
     const authHeader = req.headers.get('authorization')?.replace('Bearer ', '');
     const supabase = createServerSupabaseClient(authHeader);
 
-    if (supabase && !isGuest && !userId.startsWith('guest_')) {
+    if (supabase) {
+      // 1. Ensure profile exists so foreign key is guaranteed
+      await supabase.from('profiles').upsert(
+        {
+          id: userId,
+          username: username?.trim().slice(0, 20) || 'Player_' + userId.slice(-4),
+          country: (country || 'VN').toUpperCase(),
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'id', ignoreDuplicates: true }
+      );
+
+      // 2. Persist real-time player stats
       const { error } = await supabase.from('player_stats').upsert({
         user_id: userId,
         current_energy: currentEnergy,

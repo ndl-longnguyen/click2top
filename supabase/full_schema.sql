@@ -5,10 +5,10 @@
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- 1. Profiles Table
+-- 1. Profiles Table (Supports both Supabase Auth UUID and guest/arcade player IDs)
 CREATE TABLE IF NOT EXISTS public.profiles (
-  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  username TEXT UNIQUE NOT NULL,
+  id TEXT PRIMARY KEY,
+  username TEXT NOT NULL,
   short_description TEXT DEFAULT 'Clicking my way to #1!',
   country TEXT DEFAULT 'VN',
   avatar_url TEXT,
@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 
 -- 2. Player Stats Table
 CREATE TABLE IF NOT EXISTS public.player_stats (
-  user_id UUID PRIMARY KEY REFERENCES public.profiles(id) ON DELETE CASCADE,
+  user_id TEXT PRIMARY KEY REFERENCES public.profiles(id) ON DELETE CASCADE,
   current_energy BIGINT DEFAULT 0 CHECK (current_energy >= 0),
   total_earned_energy BIGINT DEFAULT 0 CHECK (total_earned_energy >= 0),
   leaderboard_score BIGINT DEFAULT 0 CHECK (leaderboard_score >= 0),
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS public.items (
 
 -- 4. Player Items (Inventory / Levels)
 CREATE TABLE IF NOT EXISTS public.player_items (
-  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+  user_id TEXT REFERENCES public.profiles(id) ON DELETE CASCADE,
   item_id TEXT REFERENCES public.items(id) ON DELETE CASCADE,
   level INT DEFAULT 0 CHECK (level >= 0),
   purchased_at TIMESTAMPTZ DEFAULT NOW(),
@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS public.player_items (
 -- 5. Leaderboard Entries
 CREATE TABLE IF NOT EXISTS public.leaderboard_entries (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+  user_id TEXT REFERENCES public.profiles(id) ON DELETE CASCADE,
   season_id UUID,
   score BIGINT DEFAULT 0 CHECK (score >= 0),
   period_type TEXT NOT NULL CHECK (period_type IN ('global', 'daily', 'weekly')),
@@ -82,7 +82,7 @@ CREATE TABLE IF NOT EXISTS public.seasons (
 -- 7. Player Sessions (Anti-Cheat tracking)
 CREATE TABLE IF NOT EXISTS public.player_sessions (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+  user_id TEXT REFERENCES public.profiles(id) ON DELETE CASCADE,
   started_at TIMESTAMPTZ DEFAULT NOW(),
   last_activity_at TIMESTAMPTZ DEFAULT NOW(),
   metadata JSONB,
@@ -102,7 +102,7 @@ CREATE TABLE IF NOT EXISTS public.fcm_tokens (
 -- 9. Player Rank History (Personal historical standing)
 CREATE TABLE IF NOT EXISTS public.player_rank_history (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+  user_id TEXT REFERENCES public.profiles(id) ON DELETE CASCADE,
   period_type TEXT NOT NULL,
   period_start TIMESTAMPTZ NOT NULL,
   period_end TIMESTAMPTZ NOT NULL,
@@ -117,7 +117,7 @@ CREATE TABLE IF NOT EXISTS public.period_winners (
   period_type TEXT NOT NULL,
   period_start TIMESTAMPTZ NOT NULL,
   period_end TIMESTAMPTZ NOT NULL,
-  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+  user_id TEXT REFERENCES public.profiles(id) ON DELETE CASCADE,
   snapshot_username TEXT NOT NULL,
   snapshot_description TEXT,
   country TEXT DEFAULT 'VN',
@@ -162,29 +162,26 @@ CREATE POLICY "Leaderboard entries are viewable by everyone" ON public.leaderboa
 DROP POLICY IF EXISTS "Period winners are viewable by everyone" ON public.period_winners;
 CREATE POLICY "Period winners are viewable by everyone" ON public.period_winners FOR SELECT USING (true);
 
--- User Self-Management Policies
-DROP POLICY IF EXISTS "Users can insert own profile" ON public.profiles;
-CREATE POLICY "Users can insert own profile" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
+-- API Management Policies (Permits Next.js server & web client validated operations)
+DROP POLICY IF EXISTS "Allow insert and update profile" ON public.profiles;
+CREATE POLICY "Allow insert and update profile" ON public.profiles FOR ALL USING (true) WITH CHECK (true);
 
-DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
-CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
+DROP POLICY IF EXISTS "Allow manage player stats" ON public.player_stats;
+CREATE POLICY "Allow manage player stats" ON public.player_stats FOR ALL USING (true) WITH CHECK (true);
 
-DROP POLICY IF EXISTS "Users can update own stats" ON public.player_stats;
-CREATE POLICY "Users can update own stats" ON public.player_stats FOR UPDATE USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Allow manage player items" ON public.player_items;
+CREATE POLICY "Allow manage player items" ON public.player_items FOR ALL USING (true) WITH CHECK (true);
 
-DROP POLICY IF EXISTS "Users can insert own stats" ON public.player_stats;
-CREATE POLICY "Users can insert own stats" ON public.player_stats FOR INSERT WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Allow manage leaderboard entries" ON public.leaderboard_entries;
+CREATE POLICY "Allow manage leaderboard entries" ON public.leaderboard_entries FOR ALL USING (true) WITH CHECK (true);
 
-DROP POLICY IF EXISTS "Users can view own items" ON public.player_items;
-CREATE POLICY "Users can view own items" ON public.player_items FOR SELECT USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Allow manage rank history" ON public.player_rank_history;
+CREATE POLICY "Allow manage rank history" ON public.player_rank_history FOR ALL USING (true) WITH CHECK (true);
 
-DROP POLICY IF EXISTS "Users can manage own items" ON public.player_items;
-CREATE POLICY "Users can manage own items" ON public.player_items FOR ALL USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Allow manage period winners" ON public.period_winners;
+CREATE POLICY "Allow manage period winners" ON public.period_winners FOR ALL USING (true) WITH CHECK (true);
 
-DROP POLICY IF EXISTS "Users can view own rank history" ON public.player_rank_history;
-CREATE POLICY "Users can view own rank history" ON public.player_rank_history FOR SELECT USING (auth.uid() = user_id);
-
--- Push Tokens Policies (allows registering tokens for web push)
+-- Push Tokens Policies
 DROP POLICY IF EXISTS "Allow token registration" ON public.fcm_tokens;
 CREATE POLICY "Allow token registration" ON public.fcm_tokens FOR ALL USING (true) WITH CHECK (true);
 

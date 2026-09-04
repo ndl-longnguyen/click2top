@@ -299,6 +299,8 @@ export function useGameStore() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             userId: statsRef.current.userId,
+            username: statsRef.current.username,
+            country: statsRef.current.country,
             isGuest,
             clickBatch: currentBatch,
             currentEnergy: statsRef.current.currentEnergy,
