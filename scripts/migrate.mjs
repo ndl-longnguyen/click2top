@@ -7,6 +7,25 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 async function runMigration() {
+  // If not passed via process.env (e.g. local command), try reading from .env.local / .env
+  if (!process.env.DATABASE_URL && !process.env.POSTGRES_URL && !process.env.SUPABASE_DB_URL) {
+    const envPaths = [
+      path.resolve(__dirname, '../.env.local'),
+      path.resolve(__dirname, '../.env'),
+    ];
+    for (const envPath of envPaths) {
+      if (fs.existsSync(envPath)) {
+        const lines = fs.readFileSync(envPath, 'utf8').split('\n');
+        for (const line of lines) {
+          const match = line.match(/^\s*(DATABASE_URL|POSTGRES_URL|SUPABASE_DB_URL)\s*=\s*["']?(.*?)["']?\s*$/);
+          if (match && match[2]) {
+            process.env[match[1]] = match[2];
+          }
+        }
+      }
+    }
+  }
+
   const connectionString =
     process.env.DATABASE_URL ||
     process.env.POSTGRES_URL ||

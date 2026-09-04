@@ -147,25 +147,45 @@ ALTER TABLE public.period_winners ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.fcm_tokens ENABLE ROW LEVEL SECURITY;
 
 -- Public Read Policies
+DROP POLICY IF EXISTS "Public profiles are viewable by everyone" ON public.profiles;
 CREATE POLICY "Public profiles are viewable by everyone" ON public.profiles FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public stats are viewable by everyone" ON public.player_stats;
 CREATE POLICY "Public stats are viewable by everyone" ON public.player_stats FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Items are viewable by everyone" ON public.items;
 CREATE POLICY "Items are viewable by everyone" ON public.items FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Leaderboard entries are viewable by everyone" ON public.leaderboard_entries;
 CREATE POLICY "Leaderboard entries are viewable by everyone" ON public.leaderboard_entries FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Period winners are viewable by everyone" ON public.period_winners;
 CREATE POLICY "Period winners are viewable by everyone" ON public.period_winners FOR SELECT USING (true);
 
 -- User Self-Management Policies
+DROP POLICY IF EXISTS "Users can insert own profile" ON public.profiles;
 CREATE POLICY "Users can insert own profile" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "Users can update own stats" ON public.player_stats;
 CREATE POLICY "Users can update own stats" ON public.player_stats FOR UPDATE USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can insert own stats" ON public.player_stats;
 CREATE POLICY "Users can insert own stats" ON public.player_stats FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can view own items" ON public.player_items;
 CREATE POLICY "Users can view own items" ON public.player_items FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can manage own items" ON public.player_items;
 CREATE POLICY "Users can manage own items" ON public.player_items FOR ALL USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can view own rank history" ON public.player_rank_history;
 CREATE POLICY "Users can view own rank history" ON public.player_rank_history FOR SELECT USING (auth.uid() = user_id);
 
 -- Push Tokens Policies (allows registering tokens for web push)
+DROP POLICY IF EXISTS "Allow token registration" ON public.fcm_tokens;
 CREATE POLICY "Allow token registration" ON public.fcm_tokens FOR ALL USING (true) WITH CHECK (true);
 
 -- Initial Items Seed Data
