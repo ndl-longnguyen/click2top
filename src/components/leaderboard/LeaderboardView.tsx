@@ -339,7 +339,12 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
             </div>
 
             <div className="divide-y divide-white/5">
-              {countryStandings.map((nation) => {
+              {countryStandings.length === 0 ? (
+                <div className="p-8 text-center text-slate-400 text-xs sm:text-sm">
+                  No national rankings recorded yet. Start tapping in the arena to represent your nation!
+                </div>
+              ) : (
+                countryStandings.map((nation) => {
                 const isUserCountry = nation.country === currentCountry;
                 const isGold = nation.rank === 1;
                 const isSilver = nation.rank === 2;
@@ -409,7 +414,8 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
                     </div>
                   </div>
                 );
-              })}
+              })
+              )}
             </div>
           </div>
         </div>
@@ -517,7 +523,12 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
                   <span>Past Weekly Champions</span>
                   <span>Winning Score</span>
                 </div>
-                {hallOfFame.map((winner, idx) => (
+                {hallOfFame.length === 0 ? (
+                  <div className="p-8 text-center text-slate-400 text-xs sm:text-sm">
+                    No weekly champions crowned yet. Be the first to claim glory for your nation!
+                  </div>
+                ) : (
+                  hallOfFame.map((winner, idx) => (
                   <div
                     key={winner.id || idx}
                     className="p-3.5 sm:p-5 flex items-center justify-between gap-3 hover:bg-white/5 transition-colors"
@@ -552,7 +563,8 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
                       <div className="text-[9px] sm:text-[10px] text-emerald-400 font-bold uppercase">Crowned #1</div>
                     </div>
                   </div>
-                ))}
+                ))
+                )}
               </div>
             ) : (
               // Standard Leaderboard Table

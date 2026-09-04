@@ -41,18 +41,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // If DB is unreachable during build, fallback gracefully
   }
 
-  // Include top prominent seed player URLs if no DB profiles
-  if (routes.length === 1) {
-    const seedPlayers = ['NDL_KING', 'CyberClicker', 'GoldenTap', 'SolarPulse', 'HyperSpeed'];
-    for (const username of seedPlayers) {
-      routes.push({
-        url: `${baseUrl}/player/${encodeURIComponent(username)}`,
-        lastModified: now,
-        changeFrequency: 'weekly',
-        priority: 0.7,
-      });
-    }
-  }
-
   return routes;
 }

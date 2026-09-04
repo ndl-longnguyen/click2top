@@ -41,42 +41,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     return searchCountries(countrySearch);
   }, [countrySearch]);
 
-  // Personal rank history display
-  const [rankHistory] = useState<PlayerRankHistory[]>([
-    {
-      id: 'rh_1',
-      userId: stats.userId,
-      periodType: 'weekly',
-      periodStart: '2026-08-18T00:00:00Z',
-      periodEnd: '2026-08-24T23:59:59Z',
-      rank: 24,
-      score: 412000,
-      createdAt: '2026-08-24T23:59:59Z',
-      rankDelta: 0,
-    },
-    {
-      id: 'rh_2',
-      userId: stats.userId,
-      periodType: 'weekly',
-      periodStart: '2026-08-25T00:00:00Z',
-      periodEnd: '2026-08-31T23:59:59Z',
-      rank: 14,
-      score: 1204000,
-      createdAt: '2026-08-31T23:59:59Z',
-      rankDelta: 10, // climbed 10 spots
-    },
-    {
-      id: 'rh_3',
-      userId: stats.userId,
-      periodType: 'weekly',
-      periodStart: '2026-09-01T00:00:00Z',
-      periodEnd: '2026-09-07T23:59:59Z',
-      rank: 8,
-      score: 2410200,
-      createdAt: '2026-09-07T23:59:59Z',
-      rankDelta: 6, // climbed 6 spots
-    },
-  ]);
+  // Personal rank history display (real season records)
+  const [rankHistory] = useState<PlayerRankHistory[]>([]);
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -338,11 +304,16 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         </div>
 
         <div className="divide-y divide-white/5">
-          {rankHistory.map((item) => (
-            <div
-              key={item.id}
-              className="py-3 flex items-center justify-between gap-4 text-xs sm:text-sm"
-            >
+          {rankHistory.length === 0 ? (
+            <div className="py-6 text-center text-slate-500 text-xs sm:text-sm">
+              No historical season ranks recorded yet. Play actively in weekly tournaments to earn your permanent badge!
+            </div>
+          ) : (
+            rankHistory.map((item) => (
+              <div
+                key={item.id}
+                className="py-3 flex items-center justify-between gap-4 text-xs sm:text-sm"
+              >
               <div>
                 <span className="font-bold text-white">
                   Week of {new Date(item.periodStart).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
@@ -374,7 +345,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 )}
               </div>
             </div>
-          ))}
+          ))
+          )}
         </div>
       </div>
 
