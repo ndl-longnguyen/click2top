@@ -78,26 +78,52 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
 
   return (
     <div className="w-full space-y-5 sm:space-y-6 max-w-4xl mx-auto pb-8">
-      {/* Tab Navigation */}
-      <div className="flex items-center justify-between gap-2 sm:gap-3 glass-panel p-2 rounded-2xl border border-white/10">
-        <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto w-full sm:w-auto scrollbar-none">
+      {/* Tab Navigation (Single-line responsive on mobile) */}
+      <div className="flex items-center gap-1 sm:gap-2 glass-panel p-1.5 sm:p-2 rounded-2xl border border-white/10 w-full overflow-hidden">
+        <div className="flex items-center gap-1 sm:gap-1.5 flex-1 min-w-0">
           {(['global', 'daily', 'weekly', 'nations', 'hof'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-3 sm:px-3.5 py-2 rounded-xl text-xs sm:text-sm font-extrabold tracking-wide uppercase transition-all whitespace-nowrap cursor-pointer ${
+              className={`flex-1 min-w-0 flex items-center justify-center gap-0.5 sm:gap-1.5 px-1 sm:px-3 py-1.5 sm:py-2 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-tight sm:tracking-wide transition-all whitespace-nowrap cursor-pointer ${
                 activeTab === tab
                   ? tab === 'nations'
-                    ? 'bg-gradient-to-r from-red-600 via-amber-500 to-yellow-400 text-slate-950 shadow-[0_0_20px_rgba(245,158,11,0.6)] font-black'
-                    : 'bg-amber-500 text-slate-950 shadow-[0_0_15px_rgba(245,158,11,0.5)]'
+                    ? 'bg-gradient-to-r from-red-600 via-amber-500 to-yellow-400 text-slate-950 shadow-[0_0_15px_rgba(245,158,11,0.5)] font-black'
+                    : 'bg-amber-500 text-slate-950 shadow-[0_0_12px_rgba(245,158,11,0.4)]'
                   : 'text-slate-400 hover:text-white hover:bg-white/5'
-              }`}
+              } ${tab === 'hof' ? 'hidden sm:flex flex-initial' : ''}`}
             >
-              {tab === 'global' && '🏆 Global'}
-              {tab === 'daily' && '⚡ Today'}
-              {tab === 'weekly' && '🔥 Weekly'}
-              {tab === 'nations' && '🌐 Nations Cup'}
-              {tab === 'hof' && '👑 Hall of Fame'}
+              {tab === 'global' && (
+                <>
+                  <span className="shrink-0">🏆</span>
+                  <span className="truncate">Global</span>
+                </>
+              )}
+              {tab === 'daily' && (
+                <>
+                  <span className="shrink-0">⚡</span>
+                  <span className="truncate">Today</span>
+                </>
+              )}
+              {tab === 'weekly' && (
+                <>
+                  <span className="shrink-0">🔥</span>
+                  <span className="truncate">Weekly</span>
+                </>
+              )}
+              {tab === 'nations' && (
+                <>
+                  <span className="shrink-0">🌐</span>
+                  <span className="truncate sm:hidden">Nations</span>
+                  <span className="hidden sm:inline">Nations Cup</span>
+                </>
+              )}
+              {tab === 'hof' && (
+                <>
+                  <span className="shrink-0">👑</span>
+                  <span className="truncate">Hall of Fame</span>
+                </>
+              )}
             </button>
           ))}
         </div>
@@ -105,61 +131,61 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
         <button
           onClick={fetchLeaderboard}
           disabled={loading}
-          className="p-2 rounded-xl glass-panel text-slate-400 hover:text-white transition-colors cursor-pointer shrink-0 ml-auto"
+          className="p-1.5 sm:p-2 rounded-xl glass-panel text-slate-400 hover:text-white transition-colors cursor-pointer shrink-0 ml-0.5"
           title="Refresh Standings"
         >
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-amber-400' : ''}`} />
+          <RefreshCw className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${loading ? 'animate-spin text-amber-400' : ''}`} />
         </button>
       </div>
 
-      {/* Country Filter Bar for Individual Player Standings (Global, Daily, Weekly) */}
+      {/* Country Filter Bar for Individual Player Standings (Global, Daily, Weekly) - Single-line responsive on mobile */}
       {activeTab !== 'nations' && activeTab !== 'hof' && (
-        <div className="flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 p-3 rounded-2xl bg-black/40 border border-white/10">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-300 shrink-0">
-            <Filter className="w-3.5 h-3.5 text-amber-400" />
-            <span>Filter by Country:</span>
+        <div className="flex items-center gap-1.5 sm:gap-2 p-1.5 sm:p-2.5 rounded-2xl bg-black/40 border border-white/10 w-full overflow-hidden">
+          <div className="flex items-center gap-1 text-slate-300 shrink-0">
+            <Filter className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+            <span className="hidden sm:inline text-xs font-bold text-slate-300">Filter by Country:</span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => setCountryFilter('ALL')}
+            className={`px-2 sm:px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-bold transition-all cursor-pointer shrink-0 whitespace-nowrap ${
+              countryFilter === 'ALL'
+                ? 'bg-amber-500 text-slate-950 shadow-[0_0_10px_rgba(245,158,11,0.4)]'
+                : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'
+            }`}
+          >
+            <span className="sm:hidden">🌍 All</span>
+            <span className="hidden sm:inline">🌍 Global (All)</span>
+          </button>
+
+          {currentCountry && currentCountry !== 'ALL' && (
             <button
-              onClick={() => setCountryFilter('ALL')}
-              className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                countryFilter === 'ALL'
-                  ? 'bg-amber-500 text-slate-950 shadow-[0_0_10px_rgba(245,158,11,0.4)]'
-                  : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'
+              onClick={() => setCountryFilter(currentCountry)}
+              className={`flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg text-[10px] sm:text-xs font-bold transition-all cursor-pointer shrink-0 whitespace-nowrap ${
+                countryFilter === currentCountry
+                  ? 'bg-sky-500 text-slate-950 shadow-[0_0_10px_rgba(56,189,248,0.4)]'
+                  : 'bg-white/5 text-sky-400 hover:text-sky-300 hover:bg-sky-500/10 border border-sky-500/20'
               }`}
             >
-              🌍 Global (All)
+              <span className="shrink-0">{getCountryFlag(currentCountry)}</span>
+              <span className="sm:hidden">{currentCountry}</span>
+              <span className="hidden sm:inline truncate max-w-[120px]">My Country ({currentCountry})</span>
             </button>
+          )}
 
-            {currentCountry && currentCountry !== 'ALL' && (
-              <button
-                onClick={() => setCountryFilter(currentCountry)}
-                className={`flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer max-w-[170px] ${
-                  countryFilter === currentCountry
-                    ? 'bg-sky-500 text-slate-950 shadow-[0_0_10px_rgba(56,189,248,0.4)]'
-                    : 'bg-white/5 text-sky-400 hover:text-sky-300 hover:bg-sky-500/10 border border-sky-500/20'
-                }`}
-              >
-                <span className="shrink-0">{getCountryFlag(currentCountry)}</span>
-                <span className="truncate">My Country ({currentCountry})</span>
-              </button>
-            )}
-
-            {/* Dropdown for any country */}
-            <select
-              value={countryFilter}
-              onChange={(e) => setCountryFilter(e.target.value)}
-              className="px-2.5 sm:px-3 py-1.5 rounded-lg bg-slate-900 border border-white/10 text-xs text-white font-bold focus:outline-none focus:border-amber-400 cursor-pointer max-w-[150px] sm:max-w-[180px] truncate"
-            >
-              <option value="ALL">🌍 Select Country...</option>
-              {COUNTRIES.map((c) => (
-                <option key={c.code} value={c.code}>
-                  {c.flag} {c.name} ({c.code})
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Dropdown for any country */}
+          <select
+            value={countryFilter}
+            onChange={(e) => setCountryFilter(e.target.value)}
+            className="flex-1 min-w-0 px-2 sm:px-3 py-1.5 rounded-lg bg-slate-900 border border-white/10 text-[10px] sm:text-xs text-white font-bold focus:outline-none focus:border-amber-400 cursor-pointer truncate"
+          >
+            <option value="ALL">🌍 Select Country...</option>
+            {COUNTRIES.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.flag} {c.name} ({c.code})
+              </option>
+            ))}
+          </select>
         </div>
       )}
 
