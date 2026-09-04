@@ -32,6 +32,7 @@ export default function Home() {
     collectOfflineEarnings,
     updateProfile,
     mergeIntoAccount,
+    resetGameData,
   } = useGameStore();
 
   const passivePerSec = calculatePassiveProduction(stats.items);
@@ -165,6 +166,7 @@ export default function Home() {
             onUpdateProfile={updateProfile}
             onOpenClaimModal={() => setIsClaimModalOpen(true)}
             onNavigateToLeaderboard={() => setActiveTab('leaderboard')}
+            onResetData={resetGameData}
           />
         )}
       </div>

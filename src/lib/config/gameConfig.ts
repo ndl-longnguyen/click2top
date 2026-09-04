@@ -1,34 +1,35 @@
 import { ShopItem } from '../types/game';
 
 export const GAME_CONFIG = {
-  baseClickPower: 10,
+  baseClickPower: 1,
 
   criticalClick: {
-    chance: 0.06, // 6% chance for critical
-    multiplier: 4, // 4x reward
+    chance: 0.04, // 4% chance for critical
+    multiplier: 2.5, // 2.5x reward
   },
 
   combo: {
-    timeoutMs: 2500,
+    timeoutMs: 1600, // 1.6s timeout: demands continuous focus and agility
     thresholds: [
-      { clicks: 100, multiplier: 5.0 },
-      { clicks: 50, multiplier: 3.0 },
-      { clicks: 20, multiplier: 2.0 },
-      { clicks: 10, multiplier: 1.5 },
-      { clicks: 5, multiplier: 1.2 },
+      { clicks: 200, multiplier: 2.5 },
+      { clicks: 100, multiplier: 2.0 },
+      { clicks: 60, multiplier: 1.75 },
+      { clicks: 30, multiplier: 1.5 },
+      { clicks: 15, multiplier: 1.25 },
+      { clicks: 5, multiplier: 1.1 },
       { clicks: 1, multiplier: 1.0 },
     ],
-    maxMultiplier: 5.0,
+    maxMultiplier: 2.5,
   },
 
   arena: {
     maxObjects: 8,
     minObjects: 5,
-    spawnIntervalMs: 350,
-    boomChance: 0.35, // ~35% boom chance for intense action and obstacle dodging
+    spawnIntervalMs: 320,
+    boomChance: 0.35, // ~35% boom chance for intense tactical dodging
     maxActiveBooms: 4, // Up to 4 bombs concurrently on screen
     minActiveCoins: 2, // Guarantee at least 2 active coins on screen
-    boomLifespanMs: 5000, // Bombs safely defuse after 5s
+    boomLifespanMs: 4500, // Bombs linger for 4.5s
     safeZone: {
       minX: 8,
       maxX: 92,
@@ -39,8 +40,8 @@ export const GAME_CONFIG = {
   },
 
   boom: {
-    basePenalty: 100,
-    percentagePenalty: 0.15, // 15% of current energy
+    basePenalty: 25,
+    percentagePenalty: 0.30, // 30% penalty: severely punishes reckless tapping!
     resetsCombo: true,
   },
 
@@ -59,11 +60,11 @@ export const GAME_CONFIG = {
       id: 'item_earth_clicker',
       slug: 'earth_clicker',
       name: 'EARTH CLICKER',
-      description: 'Makes your clicks significantly more powerful. Harness the earth’s energy!',
+      description: 'Harness planetary resonance. Every level adds +100% base click power!',
       icon: '🌍',
       type: 'click_power' as const,
-      basePrice: 2000,
-      priceGrowth: 1.65,
+      basePrice: 100,
+      priceGrowth: 1.85,
       baseProduction: 0,
       clickMultiplier: 2, // Lv 1 = x2, Lv 2 = x3, etc.
       unlockRequirement: 0,
@@ -77,7 +78,7 @@ export const GAME_CONFIG = {
       description: 'Produces cozy passive energy continuously.',
       icon: '🔥',
       type: 'passive' as const,
-      basePrice: 152,
+      basePrice: 30,
       priceGrowth: 1.15,
       baseProduction: 1, // 1 ⚡ / sec
       clickMultiplier: 1,
@@ -92,11 +93,11 @@ export const GAME_CONFIG = {
       description: 'Cultivates energy crops to feed your progression.',
       icon: '🌾',
       type: 'passive' as const,
-      basePrice: 800,
-      priceGrowth: 1.15,
-      baseProduction: 10, // 10 ⚡ / sec
+      basePrice: 350,
+      priceGrowth: 1.18,
+      baseProduction: 4, // 4 ⚡ / sec
       clickMultiplier: 1,
-      unlockRequirement: 0,
+      unlockRequirement: 200, // unlocks at 200 total energy earned
       level: 0,
       sortOrder: 3,
     },
@@ -107,11 +108,11 @@ export const GAME_CONFIG = {
       description: 'Generates robust energy reserves automatically.',
       icon: '🐄',
       type: 'passive' as const,
-      basePrice: 10000,
-      priceGrowth: 1.15,
-      baseProduction: 120, // 120 ⚡ / sec
+      basePrice: 2800,
+      priceGrowth: 1.20,
+      baseProduction: 18, // 18 ⚡ / sec
       clickMultiplier: 1,
-      unlockRequirement: 10000, // unlocks at 10,000 total energy earned
+      unlockRequirement: 2000, // unlocks at 2,000 total energy earned
       level: 0,
       sortOrder: 4,
     },
@@ -122,11 +123,11 @@ export const GAME_CONFIG = {
       description: 'Harnesses gale-force winds into massive energy streams.',
       icon: '💨',
       type: 'passive' as const,
-      basePrice: 75000,
-      priceGrowth: 1.15,
-      baseProduction: 1000, // 1,000 ⚡ / sec
+      basePrice: 25000,
+      priceGrowth: 1.22,
+      baseProduction: 80, // 80 ⚡ / sec
       clickMultiplier: 1,
-      unlockRequirement: 75000, // unlocks at 75,000 total energy earned
+      unlockRequirement: 20000, // unlocks at 20,000 total energy earned
       level: 0,
       sortOrder: 5,
     },
@@ -134,16 +135,31 @@ export const GAME_CONFIG = {
       id: 'item_factory',
       slug: 'factory',
       name: 'FACTORY',
-      description: 'Industrial megastructure outputting supreme power.',
+      description: 'Industrial megastructure outputting supreme automated power.',
       icon: '🏭',
       type: 'passive' as const,
-      basePrice: 250000,
-      priceGrowth: 1.15,
-      baseProduction: 5000, // 5,000 ⚡ / sec
+      basePrice: 200000,
+      priceGrowth: 1.25,
+      baseProduction: 350, // 350 ⚡ / sec
       clickMultiplier: 1,
-      unlockRequirement: 250000, // unlocks at 250,000 total energy earned
+      unlockRequirement: 150000, // unlocks at 150,000 total energy earned
       level: 0,
       sortOrder: 6,
+    },
+    {
+      id: 'item_solar_plant',
+      slug: 'solar_plant',
+      name: 'SOLAR PLANT',
+      description: 'Advanced photovoltaic solar array delivering monumental clean energy.',
+      icon: '☀️',
+      type: 'passive' as const,
+      basePrice: 1500000,
+      priceGrowth: 1.28,
+      baseProduction: 1500, // 1,500 ⚡ / sec
+      clickMultiplier: 1,
+      unlockRequirement: 1000000, // unlocks at 1,000,000 total energy earned
+      level: 0,
+      sortOrder: 7,
     },
   ] as ShopItem[],
 };

@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   return {
     title: `${decoded} — Coin Clicker Champion Profile`,
-    description: `Inspect ${decoded}'s competitive record on Coin Clicker! High score: 98M+ Energy. Can you beat them on the global Nations Cup leaderboard? Play now free!`,
+    description: `Inspect ${decoded}'s competitive record on Coin Clicker! High score: 4.85M+ Energy. Can you beat them on the global Nations Cup leaderboard? Play now free!`,
     alternates: {
       canonical: canonicalUrl,
     },
@@ -49,7 +49,7 @@ export default async function PlayerProfilePage({ params }: PageProps) {
   const decoded = decodeURIComponent(username);
 
   let bio = 'Tapping my way to the top of the leaderboard!';
-  let score = 98291221;
+  let score = 4850000;
   const rank = 1;
   let bestCombo = 127;
   let country = 'VN';

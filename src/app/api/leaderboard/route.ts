@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { LeaderboardEntry, PeriodWinner, CompetitorStatus, CountryStanding, NationalRivalryInfo } from '@/lib/types/game';
 
-// Realistic initial players across multiple nations for lively international rivalry
+// Realistic initial players across multiple nations calibrated for the rebalanced economy
 const DEMO_PLAYERS: LeaderboardEntry[] = [
   {
     rank: 1,
@@ -10,16 +10,16 @@ const DEMO_PLAYERS: LeaderboardEntry[] = [
     username: 'NDL_KING',
     shortDescription: 'Building awesome things. Reaching for the stars! 👑',
     country: 'VN',
-    score: 98291221,
+    score: 4850000,
     bestCombo: 127,
   },
   {
     rank: 2,
     userId: 'demo_player_b',
     username: 'CyberClicker',
-    shortDescription: 'Factory Lv.35, never sleeping.',
+    shortDescription: 'Factory Lv.12, never sleeping.',
     country: 'US',
-    score: 92381120,
+    score: 4210000,
     bestCombo: 98,
   },
   {
@@ -28,16 +28,16 @@ const DEMO_PLAYERS: LeaderboardEntry[] = [
     username: 'GoldenTap',
     shortDescription: 'Tapping like lightning! ⚡⚡',
     country: 'JP',
-    score: 87291882,
+    score: 3690000,
     bestCombo: 110,
   },
   {
     rank: 4,
     userId: 'demo_player_d',
     username: 'SolarPulse',
-    shortDescription: 'Chasing the top spot!',
+    shortDescription: 'Chasing the top spot with Solar Plants!',
     country: 'KR',
-    score: 54120300,
+    score: 2850000,
     bestCombo: 74,
   },
   {
@@ -46,7 +46,7 @@ const DEMO_PLAYERS: LeaderboardEntry[] = [
     username: 'HyperSpeed',
     shortDescription: 'Earth Clicker master.',
     country: 'DE',
-    score: 31800500,
+    score: 1920000,
     bestCombo: 65,
   },
   {
@@ -55,7 +55,7 @@ const DEMO_PLAYERS: LeaderboardEntry[] = [
     username: 'NeonStrike',
     shortDescription: 'No boom can stop me 💣🚫',
     country: 'FR',
-    score: 18450000,
+    score: 1350000,
     bestCombo: 82,
   },
   {
@@ -64,7 +64,7 @@ const DEMO_PLAYERS: LeaderboardEntry[] = [
     username: 'VortexZero',
     shortDescription: 'Passive production king',
     country: 'GB',
-    score: 14540000,
+    score: 920000,
     bestCombo: 45,
   },
   {
@@ -73,7 +73,7 @@ const DEMO_PLAYERS: LeaderboardEntry[] = [
     username: 'PixelWarrior',
     shortDescription: 'One click at a time.',
     country: 'BR',
-    score: 11200000,
+    score: 680000,
     bestCombo: 52,
   },
   {
@@ -82,7 +82,7 @@ const DEMO_PLAYERS: LeaderboardEntry[] = [
     username: 'LionCity_Apex',
     shortDescription: 'Singapore speedrunner ⚡',
     country: 'SG',
-    score: 9800400,
+    score: 510000,
     bestCombo: 60,
   },
   {
@@ -91,7 +91,7 @@ const DEMO_PLAYERS: LeaderboardEntry[] = [
     username: 'SiamStrike',
     shortDescription: 'Bangkok click power 🐘',
     country: 'TH',
-    score: 8450200,
+    score: 430000,
     bestCombo: 48,
   },
   {
@@ -100,7 +100,7 @@ const DEMO_PLAYERS: LeaderboardEntry[] = [
     username: 'MapleClicker',
     shortDescription: 'Ice in my veins 🍁',
     country: 'CA',
-    score: 7210000,
+    score: 360000,
     bestCombo: 55,
   },
   {
@@ -109,7 +109,7 @@ const DEMO_PLAYERS: LeaderboardEntry[] = [
     username: 'AussieThunder',
     shortDescription: 'Clicking down under 🦘',
     country: 'AU',
-    score: 6150000,
+    score: 290000,
     bestCombo: 40,
   },
   {
@@ -118,7 +118,7 @@ const DEMO_PLAYERS: LeaderboardEntry[] = [
     username: 'SaigonSpeed',
     shortDescription: 'Pho & Fast Clicks! 🍜🇻🇳',
     country: 'VN',
-    score: 5920000,
+    score: 240000,
     bestCombo: 58,
   },
   {
@@ -127,7 +127,7 @@ const DEMO_PLAYERS: LeaderboardEntry[] = [
     username: 'TokyoDrift',
     shortDescription: 'Sub-second reactions 🗾',
     country: 'JP',
-    score: 5400000,
+    score: 195000,
     bestCombo: 62,
   },
   {
@@ -136,7 +136,7 @@ const DEMO_PLAYERS: LeaderboardEntry[] = [
     username: 'LibertyBell',
     shortDescription: 'Clicking for freedom 🗽',
     country: 'US',
-    score: 4900000,
+    score: 160000,
     bestCombo: 39,
   },
 ];
@@ -151,7 +151,7 @@ const DEMO_HALL_OF_FAME: PeriodWinner[] = [
     username: 'NDL_KING',
     country: 'VN',
     snapshotDescription: 'Building awesome things.',
-    finalScore: 98291221,
+    finalScore: 4850000,
     createdAt: '2026-08-31T23:59:59Z',
   },
   {
@@ -163,7 +163,7 @@ const DEMO_HALL_OF_FAME: PeriodWinner[] = [
     username: 'CyberClicker',
     country: 'US',
     snapshotDescription: 'First week champion!',
-    finalScore: 74150200,
+    finalScore: 3740000,
     createdAt: '2026-08-24T23:59:59Z',
   },
 ];

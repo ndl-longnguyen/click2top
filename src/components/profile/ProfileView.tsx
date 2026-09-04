@@ -12,6 +12,7 @@ interface ProfileViewProps {
   onUpdateProfile: (username: string, shortDescription: string, country?: string) => void;
   onOpenClaimModal: () => void;
   onNavigateToLeaderboard?: () => void;
+  onResetData?: () => void;
 }
 
 export const ProfileView: React.FC<ProfileViewProps> = ({
@@ -20,6 +21,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   onUpdateProfile,
   onOpenClaimModal,
   onNavigateToLeaderboard,
+  onResetData,
 }) => {
   const [username, setUsername] = useState(stats.username);
   const [shortDesc, setShortDesc] = useState(stats.shortDescription);
@@ -448,6 +450,31 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </label>
         </div>
       </div>
+
+      {/* DANGER ZONE: Reset Progress */}
+      {onResetData && (
+        <div className="glass-panel rounded-2xl p-5 border border-red-500/20 bg-red-950/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h4 className="text-sm font-extrabold text-red-400 uppercase tracking-wide">
+              Reset Game Progress
+            </h4>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Wipe saved energy, combo, and shop items to experience the new hardcore progression from scratch.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              if (window.confirm('Are you sure you want to reset your progress and restart from 0 Energy?')) {
+                onResetData();
+              }
+            }}
+            className="px-4 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-black uppercase tracking-wider transition-all active:scale-95 cursor-pointer shrink-0"
+          >
+            Reset Progress
+          </button>
+        </div>
+      )}
     </div>
   );
 };

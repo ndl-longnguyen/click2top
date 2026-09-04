@@ -129,7 +129,7 @@ export function useGameStore() {
         const initialObjs: ArenaObject[] = [];
         for (let i = 0; i < GAME_CONFIG.arena.minObjects + 2; i++) {
           const currentBooms = initialObjs.filter((o) => o.type === 'boom').length;
-          const isBoom = currentBooms < 3 && Math.random() < GAME_CONFIG.arena.boomChance;
+          const isBoom = currentBooms < GAME_CONFIG.arena.maxActiveBooms && Math.random() < GAME_CONFIG.arena.boomChance;
           const pos = generateRandomPosition(initialObjs);
           initialObjs.push({
             id: 'obj_' + Math.random().toString(36).substring(2, 9),
@@ -503,6 +503,23 @@ export function useGameStore() {
     []
   );
 
+  // 10. Reset Game Data (for testing or restarting from scratch)
+  const resetGameData = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+    }
+    const guestId = 'guest_' + Math.random().toString(36).substring(2, 9);
+    const freshStats: PlayerStats = {
+      ...DEFAULT_STATS,
+      userId: guestId,
+      username: 'Guest_' + guestId.slice(-4),
+      lastActiveAt: Date.now(),
+      items: {},
+    };
+    setStats(freshStats);
+    setIsGuest(true);
+  }, []);
+
   return {
     isInitialized,
     isGuest,
@@ -521,5 +538,6 @@ export function useGameStore() {
     updateProfile,
     mergeIntoAccount,
     setRankUpData,
+    resetGameData,
   };
 }
