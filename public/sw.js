@@ -66,18 +66,24 @@ self.addEventListener('fetch', (event) => {
 // Push notification event listener
 self.addEventListener('push', (event) => {
   let data = {
-    title: 'Coin Clicker ⚡',
-    body: 'Your generators produced Energy while you were away! Collect now.',
+    title: 'Click 2 Top ⚡',
+    body: 'Your automated generators are full of Energy! Jump back in and claim #1.',
     icon: '/icon-192.png',
     badge: '/icon-192.png',
-    tag: 'coin-clicker-alert',
+    tag: 'click-2-top-alert',
   };
 
   if (event.data) {
     try {
-      data = { ...data, ...event.data.json() };
+      const parsed = event.data.json();
+      // Support both direct payloads and FCM notification object
+      const title = parsed.notification?.title || parsed.title || data.title;
+      const body = parsed.notification?.body || parsed.body || data.body;
+      const icon = parsed.notification?.icon || parsed.icon || data.icon;
+      const tag = parsed.tag || parsed.notification?.tag || data.tag;
+      data = { ...data, ...parsed, title, body, icon, tag };
     } catch {
-      data.body = event.data.text();
+      data.body = event.data.text() || data.body;
     }
   }
 
@@ -88,7 +94,7 @@ self.addEventListener('push', (event) => {
       badge: data.badge,
       tag: data.tag,
       vibrate: [200, 100, 200],
-      data: { url: '/' },
+      data: data.data || { url: '/' },
     })
   );
 });

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminSupabaseClient } from '@/lib/supabase/server';
+import { sendPushToUser, broadcastPush } from '@/lib/notifications/pushSender';
 
 export async function POST(req: NextRequest) {
   try {
@@ -98,6 +99,22 @@ export async function POST(req: NextRequest) {
         .delete()
         .eq('period_type', 'weekly')
         .eq('period_start', periodStartIso);
+
+      // 8. Dispatch Push Notification to Champion and participants
+      try {
+        await sendPushToUser(winner.user_id, {
+          title: '👑 You Won the Weekly Tournament!',
+          body: `Congratulations ${profile?.username || 'Champion'}! You finished #1 with ${winner.score.toLocaleString()} Energy!`,
+          tag: 'tournament-victory',
+        });
+        await broadcastPush({
+          title: '🏆 Weekly Tournament Concluded!',
+          body: `Champion ${profile?.username || 'Player'} claimed #1. A new week has begun — climb to the top now!`,
+          tag: 'tournament-reset',
+        });
+      } catch (notifErr) {
+        console.warn('Weekly reset push notification note:', notifErr);
+      }
     }
 
     return NextResponse.json({

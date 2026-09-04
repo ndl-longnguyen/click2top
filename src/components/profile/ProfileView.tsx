@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { PlayerStats, PlayerRankHistory } from '@/lib/types/game';
 import { NotificationService, NotificationPreferences } from '@/lib/notifications/notificationService';
-import { COUNTRIES, POPULAR_COUNTRIES, getCountryFlag, getCountryName, searchCountries } from '@/lib/config/countries';
+import { COUNTRIES, getCountryFlag, getCountryName, searchCountries } from '@/lib/config/countries';
 import { User, Bell, History, TrendingUp, TrendingDown, Minus, Save, Globe, Sparkles, Search, Check } from 'lucide-react';
 
 interface ProfileViewProps {
@@ -68,6 +68,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     setTimeout(() => setSaveSuccess(false), 2500);
   };
 
+  const [isRegisteringPush, setIsRegisteringPush] = useState(false);
+  const [testNotifMessage, setTestNotifMessage] = useState<string | null>(null);
+
   const handleTogglePref = (key: keyof NotificationPreferences) => {
     const updated = { ...notifPrefs, [key]: !notifPrefs[key] };
     setNotifPrefs(updated);
@@ -75,8 +78,21 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   };
 
   const handleRequestPush = async () => {
-    const granted = await NotificationService.requestPermission();
-    setNotifPermission(granted ? 'granted' : 'denied');
+    setIsRegisteringPush(true);
+    const res = await NotificationService.requestPermission(stats.userId);
+    setNotifPermission(res.granted ? 'granted' : 'denied');
+    setIsRegisteringPush(false);
+    if (res.granted) {
+      setTestNotifMessage('Push notifications enabled & device token registered!');
+      setTimeout(() => setTestNotifMessage(null), 4000);
+    }
+  };
+
+  const handleSendTestAlert = async () => {
+    setTestNotifMessage('Sending test notification...');
+    const res = await NotificationService.sendTestNotification(stats.userId);
+    setTestNotifMessage(res.message);
+    setTimeout(() => setTestNotifMessage(null), 4500);
   };
 
   return (
@@ -163,35 +179,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         </div>
 
         <form onSubmit={handleSaveProfile} className="space-y-6">
-          {/* Quick-Pick Popular Flags */}
-          <div>
-            <label className="block text-xs uppercase font-bold text-amber-400 mb-2 flex items-center gap-1.5">
-              <Globe className="w-3.5 h-3.5" />
-              <span>Quick-Pick Popular Flags</span>
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {POPULAR_COUNTRIES.map((c) => {
-                const isSelected = country === c.code;
-                return (
-                  <button
-                    key={c.code}
-                    type="button"
-                    onClick={() => setCountry(c.code)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                      isSelected
-                        ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.5)] scale-105'
-                        : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10 hover:border-white/20'
-                    }`}
-                  >
-                    <span className="text-base">{c.flag}</span>
-                    <span>{c.code}</span>
-                    {isSelected && <Check className="w-3 h-3 text-slate-950" />}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Username Input */}
             <div>
@@ -365,15 +352,42 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             </div>
           </div>
 
-          {notifPermission !== 'granted' && (
-            <button
-              onClick={handleRequestPush}
-              className="px-3.5 py-1.5 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-sky-400 border border-sky-500/30 font-bold text-xs transition-all cursor-pointer"
-            >
-              Enable Push Notifications
-            </button>
-          )}
+          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap shrink-0">
+            {notifPermission === 'granted' ? (
+              <div className="flex items-center gap-2">
+                <span className="flex items-center gap-1 text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-1.5 rounded-xl">
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Active</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={handleSendTestAlert}
+                  className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 shadow-sm"
+                  title="Dispatch instant test notification"
+                >
+                  <Sparkles className="w-3 h-3 text-amber-400" />
+                  <span>Test Push</span>
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={handleRequestPush}
+                disabled={isRegisteringPush}
+                className="px-3.5 py-1.5 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-sky-400 border border-sky-500/30 font-bold text-xs transition-all cursor-pointer disabled:opacity-50"
+              >
+                {isRegisteringPush ? 'Connecting...' : 'Enable Push Notifications'}
+              </button>
+            )}
+          </div>
         </div>
+
+        {testNotifMessage && (
+          <div className="text-xs font-semibold text-amber-300 bg-amber-500/10 border border-amber-500/30 px-3.5 py-2.5 rounded-xl flex items-center gap-2 animate-fade-in">
+            <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+            <span>{testNotifMessage}</span>
+          </div>
+        )}
 
         <div className="space-y-3">
           <label className="flex items-center justify-between p-3 rounded-xl bg-black/20 hover:bg-black/30 transition-colors cursor-pointer">

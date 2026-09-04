@@ -15,7 +15,7 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
-  const notificationTitle = payload.notification?.title || 'Coin Clicker ⚡';
+  const notificationTitle = payload.notification?.title || 'Click 2 Top ⚡';
   const notificationOptions = {
     body: payload.notification?.body || 'Your automated power generators are full of energy!',
     icon: '/icon-192.png',

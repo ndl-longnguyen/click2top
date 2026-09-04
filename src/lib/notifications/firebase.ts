@@ -49,12 +49,26 @@ export async function getFirebaseMessaging(): Promise<Messaging | null> {
 }
 
 export async function requestFcmToken(): Promise<string | null> {
+  if (typeof window === 'undefined' || !('Notification' in window)) return null;
+
   try {
     const fcm = await getFirebaseMessaging();
     if (!fcm) return null;
 
+    // Ensure service worker is ready or registered
+    let swReg: ServiceWorkerRegistration | undefined;
+    if ('serviceWorker' in navigator) {
+      try {
+        swReg = await navigator.serviceWorker.ready;
+      } catch {
+        swReg = await navigator.serviceWorker.register('/sw.js');
+      }
+    }
+
+    const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
     const token = await getToken(fcm, {
-      serviceWorkerRegistration: await navigator.serviceWorker.ready,
+      vapidKey: vapidKey || undefined,
+      serviceWorkerRegistration: swReg,
     });
     return token;
   } catch (err) {
