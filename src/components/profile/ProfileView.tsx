@@ -4,15 +4,17 @@ import React, { useState, useMemo } from 'react';
 import { PlayerStats, PlayerRankHistory } from '@/lib/types/game';
 import { NotificationService, NotificationPreferences } from '@/lib/notifications/notificationService';
 import { COUNTRIES, getCountryFlag, getCountryName, searchCountries } from '@/lib/config/countries';
-import { User, Bell, History, TrendingUp, TrendingDown, Minus, Save, Globe, Sparkles, Search, Check, AlertCircle } from 'lucide-react';
+import { User, Bell, History, TrendingUp, TrendingDown, Minus, Save, Globe, Sparkles, Search, Check, AlertCircle, LogIn, UserPlus, LogOut } from 'lucide-react';
+import { ConfirmationModal, ConfirmDialogOptions } from '@/components/common/ConfirmationModal';
 
 interface ProfileViewProps {
   stats: PlayerStats;
   isGuest: boolean;
   onUpdateProfile: (username: string, shortDescription: string, country?: string) => void;
-  onOpenClaimModal: () => void;
+  onOpenClaimModal: (mode?: 'signup' | 'login') => void;
   onNavigateToLeaderboard?: () => void;
   onResetData?: () => void;
+  onLogout?: () => void;
 }
 
 export const ProfileView: React.FC<ProfileViewProps> = ({
@@ -22,6 +24,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   onOpenClaimModal,
   onNavigateToLeaderboard,
   onResetData,
+  onLogout,
 }) => {
   const [username, setUsername] = useState(stats.username);
   const [shortDesc, setShortDesc] = useState(stats.shortDescription);
@@ -38,6 +41,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
   // Filtered countries based on user search
   const filteredCountries = useMemo(() => {
+    if (!countrySearch.trim()) return COUNTRIES;
     return searchCountries(countrySearch);
   }, [countrySearch]);
 
@@ -46,57 +50,63 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [usernameSuggestions, setUsernameSuggestions] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [isRegisteringPush, setIsRegisteringPush] = useState(false);
+  const [testNotifMessage, setTestNotifMessage] = useState<string | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<ConfirmDialogOptions | null>(null);
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username.trim()) return;
+    const cleanUsername = username.trim();
+    if (!cleanUsername) {
+      setErrorMessage('Username cannot be empty');
+      return;
+    }
 
     setIsSaving(true);
     setErrorMessage(null);
     setUsernameSuggestions([]);
 
+    // Check unique username if username was changed
+    if (cleanUsername.toLowerCase() !== stats.username.toLowerCase()) {
+      try {
+        const checkRes = await fetch(
+          `/api/profile/check-username?username=${encodeURIComponent(cleanUsername)}&currentUserId=${encodeURIComponent(stats.userId)}`
+        );
+        const checkData = await checkRes.json();
+        if (checkData.available === false) {
+          setErrorMessage(checkData.message || `Username "${cleanUsername}" is already taken!`);
+          if (checkData.suggestions) {
+            setUsernameSuggestions(checkData.suggestions);
+          }
+          setIsSaving(false);
+          return;
+        }
+      } catch {
+        // Fallback on network issue
+      }
+    }
+
+    // Call update API
     try {
-      const res = await fetch('/api/profile/update', {
+      await fetch('/api/profile/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId: stats.userId,
-          username: username.trim(),
+          username: cleanUsername,
           shortDescription: shortDesc,
-          country,
+          country: country,
         }),
       });
-
-      const data = await res.json();
-
-      if (!res.ok || data.error) {
-        if (data.error === 'USERNAME_TAKEN') {
-          setErrorMessage(data.message || `Username "${username}" is already taken. Please choose another!`);
-          if (Array.isArray(data.suggestions)) {
-            setUsernameSuggestions(data.suggestions);
-          }
-        } else {
-          setErrorMessage(data.error || 'Failed to save profile changes');
-        }
-        setIsSaving(false);
-        return;
-      }
-
-      onUpdateProfile(username.trim(), shortDesc, country);
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 2500);
-    } catch {
-      // Offline fallback
-      onUpdateProfile(username.trim(), shortDesc, country);
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 2500);
-    } finally {
-      setIsSaving(false);
+    } catch (err) {
+      console.warn('Profile update sync warning:', err);
     }
-  };
 
-  const [isRegisteringPush, setIsRegisteringPush] = useState(false);
-  const [testNotifMessage, setTestNotifMessage] = useState<string | null>(null);
+    onUpdateProfile(cleanUsername, shortDesc, country);
+    setIsSaving(false);
+    setSaveSuccess(true);
+    setTimeout(() => setSaveSuccess(false), 3000);
+  };
 
   const handleTogglePref = (key: keyof NotificationPreferences) => {
     const updated = { ...notifPrefs, [key]: !notifPrefs[key] };
@@ -124,67 +134,82 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
   return (
     <div className="w-full space-y-6 max-w-4xl mx-auto pb-8">
-      {/* Guest Warning / Claim Banner */}
-      {isGuest && (
-        <div className="glass-panel-gold rounded-3xl p-5 border border-amber-500/40 flex flex-wrap items-center justify-between gap-4 shadow-xl">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-amber-500/20 flex items-center justify-center text-2xl shadow-inner">
-              🛡️
+      {/* Account Status / Auth Action Banner */}
+      <div className="glass-panel rounded-3xl p-5 sm:p-6 border border-white/10 shadow-xl bg-gradient-to-br from-slate-900/90 via-slate-950/80 to-slate-900/90">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl shrink-0 border ${
+              isGuest
+                ? 'bg-amber-500/15 border-amber-500/30 text-amber-400'
+                : 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
+            }`}>
+              {isGuest ? '🎮' : '👑'}
             </div>
-            <div>
-              <h3 className="font-black text-white text-base">Guest Play Mode Active</h3>
-              <p className="text-xs text-amber-200/80 mt-0.5">
-                Your progress is stored locally. Claim a permanent account to secure your upgrades and claim your rank on the world leaderboard!
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={onOpenClaimModal}
-            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-black text-xs sm:text-sm tracking-wide shadow-[0_0_15px_rgba(245,158,11,0.5)] active:scale-95 transition-all cursor-pointer"
-          >
-            Claim Permanent Account
-          </button>
-        </div>
-      )}
-
-      {/* National Pride Combat Pass Card */}
-      <div className="relative overflow-hidden rounded-3xl border border-amber-500/30 p-6 bg-gradient-to-br from-slate-900 via-slate-950 to-amber-950/40 shadow-2xl">
-        <div className="absolute top-0 right-0 -translate-y-6 translate-x-6 w-52 h-52 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 translate-y-6 -translate-x-6 w-40 h-40 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-start sm:items-center gap-3.5 sm:gap-4 min-w-0">
-            {/* National Flag Badge - Fixed aspect-square and shrink-0 so it NEVER squishes on mobile */}
-            <div className="relative w-16 h-16 sm:w-20 sm:h-20 shrink-0 aspect-square rounded-2xl bg-black/60 border-2 border-amber-400/50 flex items-center justify-center text-4xl sm:text-5xl shadow-[0_0_20px_rgba(245,158,11,0.3)]">
-              {getCountryFlag(country)}
-              <span className="absolute -bottom-2 -right-1 px-1.5 py-0.5 rounded-md bg-amber-500 text-slate-950 font-black text-[10px] tracking-wider uppercase shadow-md">
-                {country}
-              </span>
-            </div>
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black uppercase tracking-wider text-amber-400 bg-amber-500/20 px-2.5 py-0.5 rounded-full border border-amber-500/30 flex items-center gap-1 shrink-0">
-                  <Sparkles className="w-3 h-3 text-amber-300" />
-                  REPRESENTING NATION
+                <h3 className="font-black text-white text-base sm:text-lg truncate">
+                  {isGuest ? 'Guest Mode' : stats.username}
+                </h3>
+                <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full border ${
+                  isGuest
+                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                    : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                }`}>
+                  {isGuest ? 'Playing Locally' : 'Cloud Synchronized'}
                 </span>
               </div>
-              <h2 className="text-xl sm:text-2xl font-black text-white mt-1 truncate">
-                {getCountryName(country)}
-              </h2>
-              <p className="text-xs text-amber-200/80 mt-1 max-w-lg leading-relaxed break-words">
-                ⚔️ Every Energy point you generate in the Arena contributes directly to <strong className="text-amber-300">{getCountryName(country)}</strong> on the global <strong>Nations Cup</strong> leaderboard!
+              <p className="text-xs text-slate-400 mt-1">
+                {isGuest
+                  ? 'Sign up to lock in your score on the global leaderboard, or log into an existing account.'
+                  : 'Your account and progress are safe. You can log out anytime to play on another account.'}
               </p>
             </div>
           </div>
 
-          {onNavigateToLeaderboard && (
-            <button
-              onClick={onNavigateToLeaderboard}
-              className="w-full sm:w-auto shrink-0 px-4 py-2.5 rounded-xl glass-panel border border-amber-400/30 hover:border-amber-400 text-amber-300 font-bold text-xs tracking-wide transition-all active:scale-95 cursor-pointer text-center"
-            >
-              View Nations Cup Standings ➔
-            </button>
-          )}
+          {/* Action Buttons: If guest -> Login & Sign Up. If logged in -> Only Logout */}
+          <div className="flex items-center gap-2.5 shrink-0">
+            {isGuest ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => onOpenClaimModal('login')}
+                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-white font-bold text-xs sm:text-sm transition-all cursor-pointer active:scale-95"
+                >
+                  <LogIn className="w-4 h-4 text-sky-400" />
+                  <span>Log In</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onOpenClaimModal('signup')}
+                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-black text-xs sm:text-sm tracking-wide shadow-[0_0_15px_rgba(245,158,11,0.4)] transition-all cursor-pointer active:scale-95"
+                >
+                  <UserPlus className="w-4 h-4 text-slate-950" />
+                  <span>Register</span>
+                </button>
+              </>
+            ) : (
+              onLogout && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConfirmDialog({
+                      title: 'Log Out Account?',
+                      message: 'Are you sure you want to log out? You will be returned to Guest Mode, and your online score remains safe on the cloud.',
+                      confirmText: 'Log Out',
+                      cancelText: 'Cancel',
+                      type: 'danger',
+                      icon: 'logout',
+                      onConfirm: () => onLogout(),
+                    });
+                  }}
+                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-red-500/15 hover:bg-red-500/25 text-red-300 hover:text-red-200 font-bold text-xs sm:text-sm border border-red-500/30 transition-all cursor-pointer active:scale-95"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Log Out</span>
+                </button>
+              )
+            )}
+          </div>
         </div>
       </div>
 
@@ -265,15 +290,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </div>
 
           {/* Bio / Motto Input */}
-          <div>
+          <div className="mb-1">
             <label className="block text-xs uppercase font-bold text-slate-400 mb-1.5 flex items-center justify-between">
-              <span>Player Bio & Brand Showcase (Max 250 chars)</span>
-              <span className="text-amber-400 text-[10px] font-mono">👑 Broadcasted in full when #1</span>
+              <span>Player Bio & Brand Showcase</span>
             </label>
             <textarea
               value={shortDesc}
               maxLength={250}
-              rows={3}
+              rows={4}
               onChange={(e) => setShortDesc(e.target.value)}
               className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white focus:outline-none focus:border-amber-400 text-sm resize-none"
               placeholder="e.g. 👑 #1 Champion | Follow @mybrand on X | Visit click2top.app for special events! ⚡"
@@ -363,38 +387,38 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 key={item.id}
                 className="py-3 flex items-center justify-between gap-4 text-xs sm:text-sm"
               >
-              <div>
-                <span className="font-bold text-white">
-                  Week of {new Date(item.periodStart).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                </span>
-                <span className="text-slate-500 ml-2 font-mono text-xs">
-                  {item.score.toLocaleString()} ⚡
-                </span>
-              </div>
+                <div>
+                  <span className="font-bold text-white">
+                    Week of {new Date(item.periodStart).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </span>
+                  <span className="text-slate-500 ml-2 font-mono text-xs">
+                    {item.score.toLocaleString()} ⚡
+                  </span>
+                </div>
 
-              <div className="flex items-center gap-3">
-                <span className="font-black text-amber-400 font-mono text-sm">
-                  #{item.rank}
-                </span>
+                <div className="flex items-center gap-3">
+                  <span className="font-black text-amber-400 font-mono text-sm">
+                    #{item.rank}
+                  </span>
 
-                {item.rankDelta && item.rankDelta > 0 ? (
-                  <span className="flex items-center gap-0.5 text-emerald-400 font-bold text-xs bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                    <TrendingUp className="w-3.5 h-3.5" />
-                    <span>+{item.rankDelta}</span>
-                  </span>
-                ) : item.rankDelta && item.rankDelta < 0 ? (
-                  <span className="flex items-center gap-0.5 text-red-400 font-bold text-xs bg-red-500/10 px-2 py-0.5 rounded-full border border-red-500/20">
-                    <TrendingDown className="w-3.5 h-3.5" />
-                    <span>{item.rankDelta}</span>
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-0.5 text-slate-500 font-bold text-xs">
-                    <Minus className="w-3 h-3" />
-                  </span>
-                )}
+                  {item.rankDelta && item.rankDelta > 0 ? (
+                    <span className="flex items-center gap-0.5 text-emerald-400 font-bold text-xs bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                      <TrendingUp className="w-3.5 h-3.5" />
+                      <span>+{item.rankDelta}</span>
+                    </span>
+                  ) : item.rankDelta && item.rankDelta < 0 ? (
+                    <span className="flex items-center gap-0.5 text-red-400 font-bold text-xs bg-red-500/10 px-2 py-0.5 rounded-full border border-red-500/20">
+                      <TrendingDown className="w-3.5 h-3.5" />
+                      <span>{item.rankDelta}</span>
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-0.5 text-slate-500 font-bold text-xs">
+                      <Minus className="w-3 h-3" />
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
-          ))
+            ))
           )}
         </div>
       </div>
@@ -507,15 +531,21 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               Reset Game Progress
             </h4>
             <p className="text-xs text-slate-400 mt-0.5">
-              Wipe saved energy, combo, and shop items to experience the new hardcore progression from scratch.
+              Wipe saved energy, combo, and shop items to experience the hardcore progression from scratch.
             </p>
           </div>
           <button
             type="button"
             onClick={() => {
-              if (window.confirm('Are you sure you want to reset your progress and restart from 0 Energy?')) {
-                onResetData();
-              }
+              setConfirmDialog({
+                title: 'Reset All Progress?',
+                message: 'Are you sure you want to reset your local progress and restart from 0 Energy? This action cannot be undone.',
+                confirmText: 'Reset To 0',
+                cancelText: 'Cancel',
+                type: 'danger',
+                icon: 'delete',
+                onConfirm: () => onResetData(),
+              });
             }}
             className="px-4 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-black uppercase tracking-wider transition-all active:scale-95 cursor-pointer shrink-0"
           >
@@ -523,6 +553,13 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </button>
         </div>
       )}
+
+      {/* Custom Confirmation Popup Modal */}
+      <ConfirmationModal
+        isOpen={!!confirmDialog}
+        options={confirmDialog}
+        onClose={() => setConfirmDialog(null)}
+      />
     </div>
   );
 };

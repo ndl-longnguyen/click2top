@@ -10,6 +10,7 @@ import {
   calculatePassiveProduction,
 } from '../config/gameConfig';
 import { soundEffects } from '../sound/soundEffects';
+import { getSupabaseClient } from '@/lib/supabase/client';
 
 const LOCAL_STORAGE_KEY = 'coin_clicker_save_v1';
 
@@ -543,7 +544,7 @@ export function useGameStore() {
     }));
   }, []);
 
-  // 9. Merge Guest Account into Supabase Account
+  // 9. Merge Guest Account into Supabase Account (Claiming Guest Progress)
   const mergeIntoAccount = useCallback(
     async (newUserId: string, newUsername: string) => {
       try {
@@ -571,6 +572,71 @@ export function useGameStore() {
     },
     []
   );
+
+  // 10. Load & Restore Account Data from Database (Sign In / Restore Account)
+  const loadAccountData = useCallback(async (targetUserId: string, fallbackUsername?: string) => {
+    try {
+      const res = await fetch(`/api/auth/load-user?userId=${encodeURIComponent(targetUserId)}`);
+      const result = await res.json();
+
+      if (res.ok && result.data) {
+        const dbData = result.data;
+        const loadedStats: PlayerStats = {
+          userId: dbData.userId,
+          username: dbData.username || fallbackUsername || 'Player',
+          shortDescription: dbData.shortDescription || 'Clicker Champion',
+          country: dbData.country || 'VN',
+          currentEnergy: dbData.currentEnergy || 0,
+          totalEarnedEnergy: dbData.totalEarnedEnergy || 0,
+          leaderboardScore: dbData.currentEnergy || 0,
+          bestCombo: dbData.bestCombo || 0,
+          currentCombo: dbData.currentCombo || 0,
+          lastActiveAt: dbData.lastActiveAt || Date.now(),
+          items: dbData.items || {},
+        };
+
+        setStats(loadedStats);
+        setIsGuest(false);
+        return true;
+      }
+    } catch (err) {
+      console.error('Failed to load user account data:', err);
+    }
+    // Fallback if data not found on DB yet
+    setIsGuest(false);
+    setStats((prev) => ({
+      ...prev,
+      userId: targetUserId,
+      username: fallbackUsername || prev.username,
+    }));
+    return false;
+  }, []);
+
+  // 11. Log out current account and return to Guest mode
+  const logoutCurrentAccount = useCallback(() => {
+    try {
+      const supabase = getSupabaseClient();
+      if (supabase) {
+        supabase.auth.signOut();
+      }
+    } catch {
+      // Ignore offline / unconfigured errors
+    }
+
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+    }
+    const guestId = 'guest_' + Math.random().toString(36).substring(2, 9);
+    const freshStats: PlayerStats = {
+      ...DEFAULT_STATS,
+      userId: guestId,
+      username: 'Guest_' + guestId.slice(-4),
+      lastActiveAt: Date.now(),
+      items: {},
+    };
+    setStats(freshStats);
+    setIsGuest(true);
+  }, []);
 
   // 10. Reset Game Data (for testing or restarting from scratch)
   const resetGameData = useCallback(() => {
@@ -606,6 +672,8 @@ export function useGameStore() {
     collectOfflineEarnings,
     updateProfile,
     mergeIntoAccount,
+    loadAccountData,
+    logoutCurrentAccount,
     setRankUpData,
     resetGameData,
   };

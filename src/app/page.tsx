@@ -17,6 +17,7 @@ import { Gamepad2, ShoppingBag, Trophy, User } from 'lucide-react';
 export default function Home() {
   const [activeTab, setActiveTab] = useState<'arena' | 'shop' | 'leaderboard' | 'profile'>('arena');
   const [isClaimModalOpen, setIsClaimModalOpen] = useState(false);
+  const [claimModalMode, setClaimModalMode] = useState<'signup' | 'login'>('signup');
 
   const {
     isInitialized,
@@ -33,6 +34,8 @@ export default function Home() {
     collectOfflineEarnings,
     updateProfile,
     mergeIntoAccount,
+    loadAccountData,
+    logoutCurrentAccount,
     resetGameData,
   } = useGameStore();
 
@@ -172,9 +175,13 @@ export default function Home() {
             stats={stats}
             isGuest={isGuest}
             onUpdateProfile={updateProfile}
-            onOpenClaimModal={() => setIsClaimModalOpen(true)}
+            onOpenClaimModal={(mode) => {
+              setClaimModalMode(mode || 'signup');
+              setIsClaimModalOpen(true);
+            }}
             onNavigateToLeaderboard={() => setActiveTab('leaderboard')}
             onResetData={resetGameData}
+            onLogout={logoutCurrentAccount}
           />
         )}
       </div>
@@ -248,9 +255,15 @@ export default function Home() {
       {/* Claim / Merge Guest Account Modal */}
       <ClaimAccountModal
         isOpen={isClaimModalOpen}
+        isGuest={isGuest}
+        defaultMode={claimModalMode}
         onClose={() => setIsClaimModalOpen(false)}
-        onSuccess={(newId, newName) => {
+        onClaimGuestSuccess={(newId, newName) => {
           mergeIntoAccount(newId, newName);
+          setIsClaimModalOpen(false);
+        }}
+        onLoginSuccess={async (userId, username) => {
+          await loadAccountData(userId, username);
           setIsClaimModalOpen(false);
         }}
       />
