@@ -59,6 +59,22 @@ export async function POST(req: NextRequest) {
           await supabase.from('player_items').upsert(itemRows);
         }
       }
+
+      // Clean up old guest rows to prevent duplicate leaderboard entries.
+      // Only purge rows where the old ID looks like a guest ID (starts with 'guest_')
+      // and is strictly different from the new permanent account ID.
+      const oldGuestId: string = guestStats.userId || '';
+      if (oldGuestId && oldGuestId !== targetUserId && oldGuestId.startsWith('guest_')) {
+        // Delete child tables first to avoid FK constraint errors, then profiles
+        await Promise.allSettled([
+          supabase.from('leaderboard_entries').delete().eq('user_id', oldGuestId),
+          supabase.from('player_items').delete().eq('user_id', oldGuestId),
+          supabase.from('player_stats').delete().eq('user_id', oldGuestId),
+        ]);
+        // profiles may have FK refs from the above tables; delete after children
+        await supabase.from('profiles').delete().eq('id', oldGuestId);
+        console.log(`[Merge] Cleaned up guest data: ${oldGuestId} → ${targetUserId}`);
+      }
     }
 
     return NextResponse.json({
