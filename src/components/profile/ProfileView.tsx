@@ -141,25 +141,26 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         <div className="absolute top-0 right-0 -translate-y-6 translate-x-6 w-52 h-52 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 translate-y-6 -translate-x-6 w-40 h-40 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 flex flex-wrap items-center justify-between gap-5">
-          <div className="flex items-center gap-4">
-            <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-black/60 border-2 border-amber-400/50 flex items-center justify-center text-4xl sm:text-5xl shadow-[0_0_20px_rgba(245,158,11,0.3)]">
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-start sm:items-center gap-3.5 sm:gap-4 min-w-0">
+            {/* National Flag Badge - Fixed aspect-square and shrink-0 so it NEVER squishes on mobile */}
+            <div className="relative w-16 h-16 sm:w-20 sm:h-20 shrink-0 aspect-square rounded-2xl bg-black/60 border-2 border-amber-400/50 flex items-center justify-center text-4xl sm:text-5xl shadow-[0_0_20px_rgba(245,158,11,0.3)]">
               {getCountryFlag(country)}
-              <span className="absolute -bottom-2 -right-1 px-1.5 py-0.5 rounded-md bg-amber-500 text-slate-950 font-black text-[10px] tracking-wider uppercase">
+              <span className="absolute -bottom-2 -right-1 px-1.5 py-0.5 rounded-md bg-amber-500 text-slate-950 font-black text-[10px] tracking-wider uppercase shadow-md">
                 {country}
               </span>
             </div>
-            <div>
+            <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black uppercase tracking-wider text-amber-400 bg-amber-500/20 px-2.5 py-0.5 rounded-full border border-amber-500/30 flex items-center gap-1">
+                <span className="text-[10px] font-black uppercase tracking-wider text-amber-400 bg-amber-500/20 px-2.5 py-0.5 rounded-full border border-amber-500/30 flex items-center gap-1 shrink-0">
                   <Sparkles className="w-3 h-3 text-amber-300" />
                   REPRESENTING NATION
                 </span>
               </div>
-              <h2 className="text-xl sm:text-2xl font-black text-white mt-1">
+              <h2 className="text-xl sm:text-2xl font-black text-white mt-1 truncate">
                 {getCountryName(country)}
               </h2>
-              <p className="text-xs text-amber-200/80 mt-1 max-w-lg leading-relaxed">
+              <p className="text-xs text-amber-200/80 mt-1 max-w-lg leading-relaxed break-words">
                 ⚔️ Every Energy point you generate in the Arena contributes directly to <strong className="text-amber-300">{getCountryName(country)}</strong> on the global <strong>Nations Cup</strong> leaderboard!
               </p>
             </div>
@@ -168,7 +169,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           {onNavigateToLeaderboard && (
             <button
               onClick={onNavigateToLeaderboard}
-              className="px-4 py-2.5 rounded-xl glass-panel border border-amber-400/30 hover:border-amber-400 text-amber-300 font-bold text-xs tracking-wide transition-all active:scale-95 cursor-pointer"
+              className="w-full sm:w-auto shrink-0 px-4 py-2.5 rounded-xl glass-panel border border-amber-400/30 hover:border-amber-400 text-amber-300 font-bold text-xs tracking-wide transition-all active:scale-95 cursor-pointer text-center"
             >
               View Nations Cup Standings ➔
             </button>

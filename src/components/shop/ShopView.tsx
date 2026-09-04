@@ -53,16 +53,16 @@ export const ShopView: React.FC<ShopViewProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-4 bg-black/40 px-4 py-2.5 rounded-xl border border-white/5">
+        <div className="flex items-center justify-between w-full sm:w-auto gap-3 sm:gap-4 bg-black/40 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl border border-white/5">
           <div>
             <div className="text-[10px] text-slate-400 uppercase font-bold">Total Passive Output</div>
-            <div className="text-base sm:text-lg font-black text-emerald-400 font-mono">
+            <div className="text-sm sm:text-lg font-black text-emerald-400 font-mono">
               +{totalPassiveRate.toLocaleString()} ⚡/sec
             </div>
           </div>
-          <div className="pl-4 border-l border-white/10">
+          <div className="pl-3 sm:pl-4 border-l border-white/10 text-right sm:text-left">
             <div className="text-[10px] text-slate-400 uppercase font-bold">Click Power</div>
-            <div className="text-base sm:text-lg font-black text-amber-400 font-mono">
+            <div className="text-sm sm:text-lg font-black text-amber-400 font-mono">
               ×{currentClickMultiplier}
             </div>
           </div>
