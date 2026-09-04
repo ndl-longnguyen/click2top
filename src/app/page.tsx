@@ -63,55 +63,70 @@ export default function Home() {
       />
 
       {/* Desktop Navigation Tabs */}
-      <div className="hidden sm:flex items-center gap-2 mb-4 glass-panel p-1.5 rounded-2xl border border-white/10 w-fit self-center">
+      <nav
+        aria-label="Main Navigation"
+        className="hidden sm:flex items-center gap-2 mb-4 glass-panel p-1.5 rounded-2xl border border-white/10 w-fit self-center"
+      >
         <button
+          id="nav-tab-arena"
           onClick={() => setActiveTab('arena')}
-          className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-black tracking-wider uppercase transition-all ${
+          className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-black tracking-wider uppercase transition-all cursor-pointer ${
             activeTab === 'arena'
               ? 'bg-amber-500 text-slate-950 shadow-[0_0_15px_rgba(245,158,11,0.5)]'
               : 'text-slate-400 hover:text-white hover:bg-white/5'
           }`}
+          aria-label="Open Arena"
+          aria-current={activeTab === 'arena' ? 'page' : undefined}
         >
           <Gamepad2 className="w-4 h-4" />
           <span>Arena</span>
         </button>
 
         <button
+          id="nav-tab-shop"
           onClick={() => setActiveTab('shop')}
-          className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-black tracking-wider uppercase transition-all ${
+          className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-black tracking-wider uppercase transition-all cursor-pointer ${
             activeTab === 'shop'
               ? 'bg-amber-500 text-slate-950 shadow-[0_0_15px_rgba(245,158,11,0.5)]'
               : 'text-slate-400 hover:text-white hover:bg-white/5'
           }`}
+          aria-label="Open Shop & Upgrades"
+          aria-current={activeTab === 'shop' ? 'page' : undefined}
         >
           <ShoppingBag className="w-4 h-4" />
           <span>Shop & Upgrades</span>
         </button>
 
         <button
+          id="nav-tab-leaderboard"
           onClick={() => setActiveTab('leaderboard')}
-          className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-black tracking-wider uppercase transition-all ${
+          className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-black tracking-wider uppercase transition-all cursor-pointer ${
             activeTab === 'leaderboard'
               ? 'bg-amber-500 text-slate-950 shadow-[0_0_15px_rgba(245,158,11,0.5)]'
               : 'text-slate-400 hover:text-white hover:bg-white/5'
           }`}
+          aria-label="Open Leaderboard"
+          aria-current={activeTab === 'leaderboard' ? 'page' : undefined}
         >
           <Trophy className="w-4 h-4" />
           <span>Leaderboard</span>
         </button>
 
         <button
+          id="nav-tab-profile"
           onClick={() => setActiveTab('profile')}
-          className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-black tracking-wider uppercase transition-all ${
+          className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-black tracking-wider uppercase transition-all cursor-pointer ${
             activeTab === 'profile'
               ? 'bg-amber-500 text-slate-950 shadow-[0_0_15px_rgba(245,158,11,0.5)]'
               : 'text-slate-400 hover:text-white hover:bg-white/5'
           }`}
+          aria-label="Open Profile"
+          aria-current={activeTab === 'profile' ? 'page' : undefined}
         >
           <User className="w-4 h-4" />
           <span>Profile</span>
         </button>
-      </div>
+      </nav>
 
       {/* Main Tab Content */}
       <div className="flex-1 flex flex-col items-center w-full">
@@ -155,42 +170,57 @@ export default function Home() {
       </div>
 
       {/* Mobile Bottom Navigation Bar */}
-      <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 glass-panel border-t border-white/10 px-4 py-2.5 flex items-center justify-around backdrop-blur-xl bg-slate-950/85">
+      <nav
+        aria-label="Mobile Bottom Navigation"
+        className="sm:hidden fixed bottom-0 left-0 right-0 z-40 glass-panel border-t border-white/10 px-4 py-2.5 flex items-center justify-around backdrop-blur-xl bg-slate-950/85"
+      >
         <button
+          id="mobile-nav-arena"
           onClick={() => setActiveTab('arena')}
-          className={`flex flex-col items-center gap-1 transition-colors ${
+          className={`flex flex-col items-center gap-1 transition-colors cursor-pointer ${
             activeTab === 'arena' ? 'text-amber-400 font-extrabold' : 'text-slate-400'
           }`}
+          aria-label="Open Arena"
+          aria-current={activeTab === 'arena' ? 'page' : undefined}
         >
           <Gamepad2 className="w-5 h-5" />
           <span className="text-[10px] tracking-wide uppercase">Arena</span>
         </button>
 
         <button
+          id="mobile-nav-shop"
           onClick={() => setActiveTab('shop')}
-          className={`flex flex-col items-center gap-1 transition-colors ${
+          className={`flex flex-col items-center gap-1 transition-colors cursor-pointer ${
             activeTab === 'shop' ? 'text-amber-400 font-extrabold' : 'text-slate-400'
           }`}
+          aria-label="Open Shop"
+          aria-current={activeTab === 'shop' ? 'page' : undefined}
         >
           <ShoppingBag className="w-5 h-5" />
           <span className="text-[10px] tracking-wide uppercase">Shop</span>
         </button>
 
         <button
+          id="mobile-nav-leaderboard"
           onClick={() => setActiveTab('leaderboard')}
-          className={`flex flex-col items-center gap-1 transition-colors ${
+          className={`flex flex-col items-center gap-1 transition-colors cursor-pointer ${
             activeTab === 'leaderboard' ? 'text-amber-400 font-extrabold' : 'text-slate-400'
           }`}
+          aria-label="Open Leaderboard"
+          aria-current={activeTab === 'leaderboard' ? 'page' : undefined}
         >
           <Trophy className="w-5 h-5" />
           <span className="text-[10px] tracking-wide uppercase">Rank</span>
         </button>
 
         <button
+          id="mobile-nav-profile"
           onClick={() => setActiveTab('profile')}
-          className={`flex flex-col items-center gap-1 transition-colors ${
+          className={`flex flex-col items-center gap-1 transition-colors cursor-pointer ${
             activeTab === 'profile' ? 'text-amber-400 font-extrabold' : 'text-slate-400'
           }`}
+          aria-label="Open Profile"
+          aria-current={activeTab === 'profile' ? 'page' : undefined}
         >
           <User className="w-5 h-5" />
           <span className="text-[10px] tracking-wide uppercase">Profile</span>
