@@ -22,8 +22,7 @@ const GAME_CONFIG = {
     maxMultiplier: 2.5,
   },
   boom: {
-    basePenalty: 25,
-    percentagePenalty: 0.30,
+    baseClickMultiplierPenalty: 10, // -10x base point click
   },
   offline: {
     maxHours: 8,
@@ -59,10 +58,9 @@ function calculateClickReward(earthClickerLevel, comboCount, isCrit = false) {
   return { totalReward, comboMultiplier, clickMultiplier };
 }
 
-function calculateBoomPenalty(currentEnergy) {
-  const percentagePart = Math.round(currentEnergy * GAME_CONFIG.boom.percentagePenalty);
-  const penalty = Math.max(GAME_CONFIG.boom.basePenalty, percentagePart);
-  return Math.min(penalty, currentEnergy);
+function calculateBoomPenalty(currentEnergy, clickMultiplier = 1) {
+  const baseLoss = GAME_CONFIG.boom.baseClickMultiplierPenalty * GAME_CONFIG.baseClickPower * clickMultiplier;
+  return Math.min(baseLoss, currentEnergy);
 }
 
 function calculatePassiveProduction(items) {
@@ -116,13 +114,17 @@ describe('Section 51 — Critical Game Logic Tests', () => {
     const penaltyZero = calculateBoomPenalty(0);
     assert.equal(penaltyZero, 0);
 
-    // Current energy 15 (< 25 base penalty): penalty bounded to current energy
-    const penalty15 = calculateBoomPenalty(15);
-    assert.equal(penalty15, 15);
+    // Current energy 6 (< 10 base penalty): penalty bounded to current energy
+    const penalty6 = calculateBoomPenalty(6);
+    assert.equal(penalty6, 6);
 
-    // Current energy 1,000: 30% is 300 > base 25
-    const penalty1000 = calculateBoomPenalty(1000);
-    assert.equal(penalty1000, 300);
+    // Current energy 1,000 with base click: exactly 10x base point click (10 * 1 * 1 = 10)
+    const penalty1000 = calculateBoomPenalty(1000, 1);
+    assert.equal(penalty1000, 10);
+
+    // Current energy 1,000 with Earth Clicker Lv 2 (x3): 10 * 1 * 3 = 30
+    const penaltyUpgraded = calculateBoomPenalty(1000, 3);
+    assert.equal(penaltyUpgraded, 30);
   });
 
   test('3. Shop Item Pricing & Leveling Formula', () => {

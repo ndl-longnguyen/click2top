@@ -375,7 +375,9 @@ export function useGameStore() {
   // 5. Handle Boom Click
   const handleBoomClick = useCallback(
     (objectId: string, x: number, y: number) => {
-      const penalty = calculateBoomPenalty(statsRef.current.currentEnergy);
+      const earthLevel = statsRef.current.items['earth_clicker'] || 0;
+      const clickMultiplier = earthLevel > 0 ? earthLevel + 1 : 1;
+      const penalty = calculateBoomPenalty(statsRef.current.currentEnergy, clickMultiplier);
 
       soundEffects.playBoom();
 

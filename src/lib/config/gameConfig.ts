@@ -40,8 +40,7 @@ export const GAME_CONFIG = {
   },
 
   boom: {
-    basePenalty: 25,
-    percentagePenalty: 0.30, // 30% penalty: severely punishes reckless tapping!
+    baseClickMultiplierPenalty: 10, // -10x base point click
     resetsCombo: true,
   },
 
@@ -200,11 +199,10 @@ export function calculateClickReward(
 }
 
 /**
- * Calculates Boom penalty
+ * Calculates Boom penalty (-10x base point click)
  */
-export function calculateBoomPenalty(currentEnergy: number): number {
-  const percentagePart = Math.round(currentEnergy * GAME_CONFIG.boom.percentagePenalty);
-  const penalty = Math.max(GAME_CONFIG.boom.basePenalty, percentagePart);
+export function calculateBoomPenalty(currentEnergy: number, clickMultiplier: number = 1): number {
+  const penalty = GAME_CONFIG.boom.baseClickMultiplierPenalty * GAME_CONFIG.baseClickPower * clickMultiplier;
   return Math.min(penalty, currentEnergy); // never allows energy to become negative
 }
 
