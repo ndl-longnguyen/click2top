@@ -17,6 +17,7 @@ export async function POST(req: NextRequest) {
         id: targetUserId,
         username: targetUsername || guestStats.username || 'Player',
         short_description: guestStats.shortDescription || 'Clicking to the top!',
+        country: guestStats.country || 'VN',
         updated_at: new Date().toISOString(),
       });
 

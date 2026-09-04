@@ -1,15 +1,17 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { PlayerStats, PlayerRankHistory } from '@/lib/types/game';
 import { NotificationService, NotificationPreferences } from '@/lib/notifications/notificationService';
-import { User, Bell, History, TrendingUp, TrendingDown, Minus, Save } from 'lucide-react';
+import { COUNTRIES, POPULAR_COUNTRIES, getCountryFlag, getCountryName, searchCountries } from '@/lib/config/countries';
+import { User, Bell, History, TrendingUp, TrendingDown, Minus, Save, Globe, Sparkles, Search, Check } from 'lucide-react';
 
 interface ProfileViewProps {
   stats: PlayerStats;
   isGuest: boolean;
-  onUpdateProfile: (username: string, shortDescription: string) => void;
+  onUpdateProfile: (username: string, shortDescription: string, country?: string) => void;
   onOpenClaimModal: () => void;
+  onNavigateToLeaderboard?: () => void;
 }
 
 export const ProfileView: React.FC<ProfileViewProps> = ({
@@ -17,10 +19,13 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   isGuest,
   onUpdateProfile,
   onOpenClaimModal,
+  onNavigateToLeaderboard,
 }) => {
   const [username, setUsername] = useState(stats.username);
   const [shortDesc, setShortDesc] = useState(stats.shortDescription);
+  const [country, setCountry] = useState((stats.country || 'VN').toUpperCase());
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [countrySearch, setCountrySearch] = useState('');
 
   const [notifPrefs, setNotifPrefs] = useState<NotificationPreferences>(() =>
     NotificationService.getPreferences()
@@ -28,6 +33,11 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const [notifPermission, setNotifPermission] = useState<NotificationPermission | 'unsupported'>(() =>
     NotificationService.getPermissionState()
   );
+
+  // Filtered countries based on user search
+  const filteredCountries = useMemo(() => {
+    return searchCountries(countrySearch);
+  }, [countrySearch]);
 
   // Personal rank history display
   const [rankHistory] = useState<PlayerRankHistory[]>([
@@ -66,11 +76,28 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     },
   ]);
 
-  const handleSaveProfile = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    onUpdateProfile(username, shortDesc);
+    onUpdateProfile(username, shortDesc, country);
+
+    // Also persist to Supabase if authenticated
+    try {
+      await fetch('/api/profile/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: stats.userId,
+          username,
+          shortDescription: shortDesc,
+          country,
+        }),
+      });
+    } catch {
+      // Ignored for guest/offline
+    }
+
     setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 2000);
+    setTimeout(() => setSaveSuccess(false), 2500);
   };
 
   const handleTogglePref = (key: keyof NotificationPreferences) => {
@@ -85,62 +112,179 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   };
 
   return (
-    <div className="w-full space-y-6 max-w-4xl mx-auto">
+    <div className="w-full space-y-6 max-w-4xl mx-auto pb-8">
       {/* Guest Warning / Claim Banner */}
       {isGuest && (
-        <div className="glass-panel-gold rounded-3xl p-5 border border-amber-500/40 flex flex-wrap items-center justify-between gap-4">
+        <div className="glass-panel-gold rounded-3xl p-5 border border-amber-500/40 flex flex-wrap items-center justify-between gap-4 shadow-xl">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-amber-500/20 flex items-center justify-center text-2xl">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/20 flex items-center justify-center text-2xl shadow-inner">
               🛡️
             </div>
             <div>
               <h3 className="font-black text-white text-base">Guest Play Mode Active</h3>
               <p className="text-xs text-amber-200/80 mt-0.5">
-                Your progress is stored locally. Claim a permanent account to keep your upgrades safe and claim your spot on the leaderboard!
+                Your progress is stored locally. Claim a permanent account to secure your upgrades and claim your rank on the world leaderboard!
               </p>
             </div>
           </div>
           <button
             onClick={onOpenClaimModal}
-            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-black text-xs sm:text-sm tracking-wide shadow-[0_0_15px_rgba(245,158,11,0.5)] active:scale-95 transition-all"
+            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-black text-xs sm:text-sm tracking-wide shadow-[0_0_15px_rgba(245,158,11,0.5)] active:scale-95 transition-all cursor-pointer"
           >
             Claim Permanent Account
           </button>
         </div>
       )}
 
-      {/* Profile & Custom Bio Section */}
-      <div className="glass-panel rounded-3xl p-5 sm:p-6 border border-white/10 space-y-5">
+      {/* National Pride Combat Pass Card */}
+      <div className="relative overflow-hidden rounded-3xl border border-amber-500/30 p-6 bg-gradient-to-br from-slate-900 via-slate-950 to-amber-950/40 shadow-2xl">
+        <div className="absolute top-0 right-0 -translate-y-6 translate-x-6 w-52 h-52 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 translate-y-6 -translate-x-6 w-40 h-40 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-wrap items-center justify-between gap-5">
+          <div className="flex items-center gap-4">
+            <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-black/60 border-2 border-amber-400/50 flex items-center justify-center text-4xl sm:text-5xl shadow-[0_0_20px_rgba(245,158,11,0.3)]">
+              {getCountryFlag(country)}
+              <span className="absolute -bottom-2 -right-1 px-1.5 py-0.5 rounded-md bg-amber-500 text-slate-950 font-black text-[10px] tracking-wider uppercase">
+                {country}
+              </span>
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black uppercase tracking-wider text-amber-400 bg-amber-500/20 px-2.5 py-0.5 rounded-full border border-amber-500/30 flex items-center gap-1">
+                  <Sparkles className="w-3 h-3 text-amber-300" />
+                  REPRESENTING NATION
+                </span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-black text-white mt-1">
+                {getCountryName(country)}
+              </h2>
+              <p className="text-xs text-amber-200/80 mt-1 max-w-lg leading-relaxed">
+                ⚔️ Every Energy point you generate in the Arena contributes directly to <strong className="text-amber-300">{getCountryName(country)}</strong> on the global <strong>Nations Cup</strong> leaderboard!
+              </p>
+            </div>
+          </div>
+
+          {onNavigateToLeaderboard && (
+            <button
+              onClick={onNavigateToLeaderboard}
+              className="px-4 py-2.5 rounded-xl glass-panel border border-amber-400/30 hover:border-amber-400 text-amber-300 font-bold text-xs tracking-wide transition-all active:scale-95 cursor-pointer"
+            >
+              View Nations Cup Standings ➔
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Profile Customization Form */}
+      <div className="glass-panel rounded-3xl p-5 sm:p-6 border border-white/10 space-y-6">
         <div className="flex items-center gap-3 pb-4 border-b border-white/10">
           <div className="w-12 h-12 rounded-2xl bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-400">
             <User className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-lg font-black text-white">Player Profile & Custom Branding</h3>
+            <h3 className="text-lg font-black text-white flex items-center gap-2">
+              <span>Player Profile & National Flag</span>
+              <span className="text-xl">{getCountryFlag(country)}</span>
+            </h3>
             <p className="text-xs text-slate-400">
-              Your bio is displayed on your public profile and on the Top 1 showcase banner if you reach #1!
+              Select your national representative flag to compete with millions of clickers worldwide!
             </p>
           </div>
         </div>
 
-        <form onSubmit={handleSaveProfile} className="space-y-4">
+        <form onSubmit={handleSaveProfile} className="space-y-6">
+          {/* Quick-Pick Popular Flags */}
           <div>
-            <label className="block text-xs uppercase font-bold text-slate-400 mb-1.5">
-              Player Display Name
+            <label className="block text-xs uppercase font-bold text-amber-400 mb-2 flex items-center gap-1.5">
+              <Globe className="w-3.5 h-3.5" />
+              <span>Quick-Pick Popular Flags</span>
             </label>
-            <input
-              type="text"
-              value={username}
-              maxLength={20}
-              onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white font-bold focus:outline-none focus:border-amber-400 text-sm"
-              placeholder="e.g. MasterClicker"
-            />
+            <div className="flex flex-wrap gap-2">
+              {POPULAR_COUNTRIES.map((c) => {
+                const isSelected = country === c.code;
+                return (
+                  <button
+                    key={c.code}
+                    type="button"
+                    onClick={() => setCountry(c.code)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.5)] scale-105'
+                        : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10 hover:border-white/20'
+                    }`}
+                  >
+                    <span className="text-base">{c.flag}</span>
+                    <span>{c.code}</span>
+                    {isSelected && <Check className="w-3 h-3 text-slate-950" />}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Username Input */}
+            <div>
+              <label className="block text-xs uppercase font-bold text-slate-400 mb-1.5">
+                Player Display Name
+              </label>
+              <input
+                type="text"
+                value={username}
+                maxLength={20}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white font-bold focus:outline-none focus:border-amber-400 text-sm"
+                placeholder="e.g. MasterClicker"
+              />
+            </div>
+
+            {/* Complete World Country Selector with Search */}
+            <div>
+              <label className="block text-xs uppercase font-bold text-slate-400 mb-1.5 flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <Globe className="w-3.5 h-3.5 text-sky-400" />
+                  <span>All Countries Worldwide ({COUNTRIES.length} Nations)</span>
+                </span>
+                <span className="text-amber-400 font-mono font-bold">
+                  {getCountryFlag(country)} {country}
+                </span>
+              </label>
+
+              {/* Country search filter */}
+              <div className="space-y-2">
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={countrySearch}
+                    onChange={(e) => setCountrySearch(e.target.value)}
+                    placeholder="Search by name or code (e.g. Viet, US, JP...)"
+                    className="w-full pl-9 pr-3 py-1.5 rounded-lg bg-black/50 border border-white/10 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-400"
+                  />
+                </div>
+
+                <div className="relative">
+                  <select
+                    value={country}
+                    onChange={(e) => setCountry(e.target.value.toUpperCase())}
+                    className="w-full px-4 py-2.5 rounded-xl bg-black/50 border border-white/10 text-white font-bold focus:outline-none focus:border-amber-400 text-sm cursor-pointer"
+                  >
+                    {filteredCountries.map((c) => (
+                      <option key={c.code} value={c.code} className="bg-slate-900 text-white">
+                        {c.flag} {c.name} ({c.code})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bio / Motto Input */}
           <div>
             <label className="block text-xs uppercase font-bold text-slate-400 mb-1.5">
-              Short Description / Bio (Max 100 characters)
+              Player Bio / Battle Cry (Max 100 characters)
             </label>
             <textarea
               value={shortDesc}
@@ -148,23 +292,29 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               rows={2}
               onChange={(e) => setShortDesc(e.target.value)}
               className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white focus:outline-none focus:border-amber-400 text-sm resize-none"
-              placeholder="e.g. Building awesome things and claiming #1!"
+              placeholder="e.g. Clicking for national glory and claiming #1! ⚡"
             />
             <div className="text-right text-[11px] text-slate-500 font-mono mt-1">
               {shortDesc.length}/100
             </div>
           </div>
 
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-emerald-400 font-bold">
-              {saveSuccess ? '✓ Profile saved successfully!' : ''}
-            </span>
+          {/* Submit Button & Confirmation */}
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+            <div className="flex items-center gap-2">
+              {saveSuccess && (
+                <span className="text-xs text-emerald-400 font-bold flex items-center gap-1.5 bg-emerald-500/10 px-3 py-1.5 rounded-xl border border-emerald-500/20 animate-pulse">
+                  <Check className="w-4 h-4" />
+                  Profile and representing country saved successfully!
+                </span>
+              )}
+            </div>
             <button
               type="submit"
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold text-xs sm:text-sm tracking-wide shadow-lg transition-all active:scale-95"
+              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs sm:text-sm tracking-wide shadow-[0_0_15px_rgba(245,158,11,0.5)] transition-all active:scale-95 cursor-pointer"
             >
               <Save className="w-4 h-4" />
-              <span>Save Changes</span>
+              <span>Save Profile Changes</span>
             </button>
           </div>
         </form>
@@ -179,7 +329,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           <div>
             <h3 className="text-base sm:text-lg font-black text-white">Your Rank History</h3>
             <p className="text-xs text-slate-400">
-              Track your weekly standings and rank progression over time.
+              Track your standings and progression across competitive seasons.
             </p>
           </div>
         </div>
@@ -225,54 +375,76 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         </div>
       </div>
 
-      {/* Section 28: Notification Preferences */}
+      {/* Notifications Section */}
       <div className="glass-panel rounded-3xl p-5 sm:p-6 border border-white/10 space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-white/10">
+        <div className="flex items-center justify-between gap-4 pb-3 border-b border-white/10">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
               <Bell className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base sm:text-lg font-black text-white">Push Notifications (FCM)</h3>
+              <h3 className="text-base sm:text-lg font-black text-white">Notification Preferences</h3>
               <p className="text-xs text-slate-400">
-                Receive important alerts without spam.
+                Receive instant alerts when outranked or when the weekly season is concluding.
               </p>
             </div>
           </div>
 
-          {notifPermission !== 'granted' && notifPermission !== 'unsupported' && (
+          {notifPermission !== 'granted' && (
             <button
               onClick={handleRequestPush}
-              className="px-3.5 py-1.5 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 hover:bg-amber-500/30 text-xs font-bold transition-all"
+              className="px-3.5 py-1.5 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-sky-400 border border-sky-500/30 font-bold text-xs transition-all cursor-pointer"
             >
-              Enable Browser Alerts
+              Enable Push Notifications
             </button>
           )}
         </div>
 
-        <div className="space-y-3 pt-2">
-          {[
-            { key: 'someonePassedMe', label: 'Someone passed me on the leaderboard', desc: 'Alert when another player overtakes your rank' },
-            { key: 'rankUpdates', label: 'Rank updates and milestone alerts', desc: 'Alert when you are close to beating the next player' },
-            { key: 'offlineEarnings', label: 'Offline generator earnings reminder', desc: 'Alert when your factories are filled with energy' },
-            { key: 'dailyReminder', label: 'Daily login bonus reminder', desc: 'Gentle reminder to keep your daily streak alive' },
-          ].map((item) => (
-            <label
-              key={item.key}
-              className="flex items-start justify-between gap-4 p-3 rounded-xl bg-white/5 hover:bg-white/10 cursor-pointer transition-colors"
-            >
-              <div>
-                <div className="text-xs sm:text-sm font-bold text-white">{item.label}</div>
-                <div className="text-[11px] text-slate-400 mt-0.5">{item.desc}</div>
+        <div className="space-y-3">
+          <label className="flex items-center justify-between p-3 rounded-xl bg-black/20 hover:bg-black/30 transition-colors cursor-pointer">
+            <div>
+              <div className="text-xs sm:text-sm font-bold text-white">Outranked Alert</div>
+              <div className="text-[11px] text-slate-400">
+                Notify immediately when another player overtakes your rank
               </div>
-              <input
-                type="checkbox"
-                checked={Boolean(notifPrefs[item.key as keyof NotificationPreferences])}
-                onChange={() => handleTogglePref(item.key as keyof NotificationPreferences)}
-                className="w-4 h-4 accent-amber-500 cursor-pointer mt-1"
-              />
-            </label>
-          ))}
+            </div>
+            <input
+              type="checkbox"
+              checked={notifPrefs.someonePassedMe}
+              onChange={() => handleTogglePref('someonePassedMe')}
+              className="w-4 h-4 rounded text-amber-500 focus:ring-amber-400 cursor-pointer"
+            />
+          </label>
+
+          <label className="flex items-center justify-between p-3 rounded-xl bg-black/20 hover:bg-black/30 transition-colors cursor-pointer">
+            <div>
+              <div className="text-xs sm:text-sm font-bold text-white">Rank & Season Updates</div>
+              <div className="text-[11px] text-slate-400">
+                Get notified when your rank or representing country standing shifts
+              </div>
+            </div>
+            <input
+              type="checkbox"
+              checked={notifPrefs.rankUpdates}
+              onChange={() => handleTogglePref('rankUpdates')}
+              className="w-4 h-4 rounded text-amber-500 focus:ring-amber-400 cursor-pointer"
+            />
+          </label>
+
+          <label className="flex items-center justify-between p-3 rounded-xl bg-black/20 hover:bg-black/30 transition-colors cursor-pointer">
+            <div>
+              <div className="text-xs sm:text-sm font-bold text-white">Offline Energy Full</div>
+              <div className="text-[11px] text-slate-400">
+                Notify when offline automated generators reach maximum capacity
+              </div>
+            </div>
+            <input
+              type="checkbox"
+              checked={notifPrefs.offlineEarnings}
+              onChange={() => handleTogglePref('offlineEarnings')}
+              className="w-4 h-4 rounded text-amber-500 focus:ring-amber-400 cursor-pointer"
+            />
+          </label>
         </div>
       </div>
     </div>

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Trophy, Flame, Zap, ArrowLeft, Play } from 'lucide-react';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { getCountryFlag, getCountryName } from '@/lib/config/countries';
 
 interface PageProps {
   params: Promise<{ username: string }>;
@@ -31,17 +32,19 @@ export default async function PlayerProfilePage({ params }: PageProps) {
   let score = 98291221;
   const rank = 1;
   let bestCombo = 127;
+  let country = 'VN';
 
   const supabase = createServerSupabaseClient();
   if (supabase) {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('id, short_description')
+      .select('id, short_description, country')
       .eq('username', decoded)
       .maybeSingle();
 
     if (profile) {
       bio = profile.short_description || bio;
+      country = profile.country || country;
       const { data: stats } = await supabase
         .from('player_stats')
         .select('leaderboard_score, best_combo')
@@ -77,12 +80,14 @@ export default async function PlayerProfilePage({ params }: PageProps) {
 
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-black tracking-wider uppercase mb-2">
+              <span className="text-base">{getCountryFlag(country)}</span>
               <Trophy className="w-3.5 h-3.5" />
-              <span>GLOBAL RANK #{rank}</span>
+              <span>GLOBAL RANK #{rank} ({getCountryName(country)})</span>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl font-black text-white tracking-wide">
-              {decoded}
+            <h1 className="text-3xl sm:text-4xl font-black text-white tracking-wide flex items-center justify-center gap-2">
+              <span>{getCountryFlag(country)}</span>
+              <span>{decoded}</span>
             </h1>
 
             <p className="text-sm sm:text-base italic text-amber-200/90 max-w-md mx-auto mt-2">

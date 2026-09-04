@@ -57,6 +57,7 @@ export default function Home() {
         passivePerSec={passivePerSec}
         isGuest={isGuest}
         username={stats.username}
+        country={stats.country}
         onOpenProfile={() => setActiveTab('profile')}
         onOpenClaimModal={() => setIsClaimModalOpen(true)}
       />
@@ -138,6 +139,7 @@ export default function Home() {
           <LeaderboardView
             currentUserId={stats.userId}
             currentUserScore={stats.leaderboardScore}
+            currentCountry={stats.country}
           />
         )}
 
@@ -147,6 +149,7 @@ export default function Home() {
             isGuest={isGuest}
             onUpdateProfile={updateProfile}
             onOpenClaimModal={() => setIsClaimModalOpen(true)}
+            onNavigateToLeaderboard={() => setActiveTab('leaderboard')}
           />
         )}
       </div>

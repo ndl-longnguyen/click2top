@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     // 4. Fetch Top Players for the closing week
     const { data: topPlayers, error: fetchErr } = await supabase
       .from('leaderboard_entries')
-      .select('user_id, score, profiles(username, short_description)')
+      .select('user_id, score, profiles(username, short_description, country)')
       .eq('period_type', 'weekly')
       .order('score', { ascending: false })
       .limit(100);
@@ -74,6 +74,7 @@ export async function POST(req: NextRequest) {
         user_id: winner.user_id,
         snapshot_username: profile?.username || 'Champion',
         snapshot_description: profile?.short_description || 'Crowned #1 Champion of the Week!',
+        country: profile?.country || 'VN',
         final_score: winner.score,
         created_at: new Date().toISOString(),
       });

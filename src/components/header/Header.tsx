@@ -1,14 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Volume2, VolumeX, Zap, Sparkles, User, ShieldAlert } from 'lucide-react';
+import { Volume2, VolumeX, Zap, Sparkles, ShieldAlert } from 'lucide-react';
 import { soundEffects } from '@/lib/sound/soundEffects';
+import { getCountryFlag } from '@/lib/config/countries';
 
 interface HeaderProps {
   currentEnergy: number;
   passivePerSec: number;
   isGuest: boolean;
   username: string;
+  country?: string;
   onOpenProfile: () => void;
   onOpenClaimModal: () => void;
 }
@@ -18,6 +20,7 @@ export const Header: React.FC<HeaderProps> = ({
   passivePerSec,
   isGuest,
   username,
+  country,
   onOpenProfile,
   onOpenClaimModal,
 }) => {
@@ -75,29 +78,32 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Sound Toggle */}
         <button
           onClick={handleToggleSound}
-          className="p-2.5 rounded-xl glass-panel border border-white/10 hover:bg-white/10 text-slate-300 transition-colors"
+          className="p-2.5 rounded-xl glass-panel border border-white/10 hover:bg-white/10 text-slate-300 transition-colors cursor-pointer"
           title={isMuted ? 'Unmute Game Sounds' : 'Mute Game Sounds'}
           aria-label={isMuted ? 'Unmute' : 'Mute'}
         >
           {isMuted ? <VolumeX className="w-5 h-5 text-red-400" /> : <Volume2 className="w-5 h-5 text-emerald-400" />}
         </button>
 
-        {/* Guest vs User button */}
-        {isGuest ? (
+        {/* Profile Button with Country Flag */}
+        <button
+          onClick={onOpenProfile}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl glass-panel border border-white/10 hover:border-amber-400/50 text-white font-bold text-xs sm:text-sm transition-all cursor-pointer"
+          title="Open Profile"
+        >
+          <span className="text-base">{getCountryFlag(country)}</span>
+          <span className="max-w-[80px] sm:max-w-[120px] truncate">{username}</span>
+        </button>
+
+        {/* Guest Save Progress CTA */}
+        {isGuest && (
           <button
             onClick={onOpenClaimModal}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs sm:text-sm tracking-wide shadow-[0_0_15px_rgba(245,158,11,0.4)] transition-all active:scale-95"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs sm:text-sm tracking-wide shadow-[0_0_15px_rgba(245,158,11,0.4)] transition-all active:scale-95 cursor-pointer"
+            title="Claim Permanent Account"
           >
             <ShieldAlert className="w-4 h-4 text-slate-950" />
-            <span>Save Progress</span>
-          </button>
-        ) : (
-          <button
-            onClick={onOpenProfile}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl glass-panel border border-white/10 hover:bg-white/10 text-white font-bold text-xs sm:text-sm transition-all"
-          >
-            <User className="w-4 h-4 text-sky-400" />
-            <span className="max-w-[90px] truncate">{username}</span>
+            <span className="hidden sm:inline">Save</span>
           </button>
         )}
       </div>

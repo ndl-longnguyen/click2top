@@ -17,6 +17,7 @@ const DEFAULT_STATS: PlayerStats = {
   userId: 'guest_player',
   username: 'Guest Player',
   shortDescription: 'Clicking my way to the top!',
+  country: 'VN',
   currentEnergy: 0,
   totalEarnedEnergy: 0,
   leaderboardScore: 0,
@@ -460,8 +461,8 @@ export function useGameStore() {
     setOfflineModalOpen(false);
   }, [offlineEarned]);
 
-  // 8. Update Profile (Username, Description)
-  const updateProfile = useCallback((username: string, shortDescription: string) => {
+  // 8. Update Profile (Username, Description, Country)
+  const updateProfile = useCallback((username: string, shortDescription: string, country?: string) => {
     const cleanUsername = username.trim().slice(0, 20);
     const cleanDesc = shortDescription.trim().slice(0, 100);
 
@@ -469,6 +470,7 @@ export function useGameStore() {
       ...prev,
       username: cleanUsername || prev.username,
       shortDescription: cleanDesc || prev.shortDescription,
+      country: country || prev.country || 'VN',
     }));
   }, []);
 

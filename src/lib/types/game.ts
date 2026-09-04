@@ -40,6 +40,7 @@ export interface PlayerStats {
   userId: string;
   username: string;
   shortDescription: string;
+  country?: string;
   avatarUrl?: string;
   currentEnergy: number;
   totalEarnedEnergy: number;
@@ -55,6 +56,7 @@ export interface LeaderboardEntry {
   userId: string;
   username: string;
   shortDescription: string;
+  country?: string;
   avatarUrl?: string;
   score: number;
   isCurrentUser?: boolean;
@@ -68,6 +70,7 @@ export interface PeriodWinner {
   periodEnd: string;
   userId: string;
   username: string;
+  country?: string;
   snapshotDescription: string;
   finalScore: number;
   createdAt: string;
@@ -85,11 +88,40 @@ export interface PlayerRankHistory {
   rankDelta?: number; // positive = climbed up, negative = fell down, 0 = unchanged
 }
 
+export interface CountryStanding {
+  rank: number;
+  country: string;
+  totalScore: number;
+  playerCount: number;
+  topPlayer: {
+    username: string;
+    score: number;
+  };
+}
+
+export interface NationalRivalryInfo {
+  userCountry: string;
+  userCountryRank: number;
+  userCountryScore: number;
+  aheadCountry?: {
+    country: string;
+    rank: number;
+    scoreDiff: number;
+  };
+  behindCountry?: {
+    country: string;
+    rank: number;
+    leadDiff: number;
+  };
+}
+
 export interface CompetitorStatus {
   userRank: number;
   userScore: number;
+  userCountry?: string;
   nextPlayerRank?: number;
   nextPlayerUsername?: string;
+  nextPlayerCountry?: string;
   nextPlayerScore?: number;
   energyNeeded?: number;
   isTopOne: boolean;

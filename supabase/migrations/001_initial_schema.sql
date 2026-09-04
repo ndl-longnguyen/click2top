@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   username TEXT UNIQUE NOT NULL,
   short_description TEXT DEFAULT 'Clicking my way to #1!',
+  country TEXT DEFAULT 'VN',
   avatar_url TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -117,6 +118,7 @@ CREATE TABLE IF NOT EXISTS public.period_winners (
   user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
   snapshot_username TEXT NOT NULL,
   snapshot_description TEXT,
+  country TEXT DEFAULT 'VN',
   final_score BIGINT NOT NULL,
   notified_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -125,6 +127,7 @@ CREATE TABLE IF NOT EXISTS public.period_winners (
 
 -- Performance Indexes
 CREATE INDEX IF NOT EXISTS idx_profiles_username ON public.profiles(username);
+CREATE INDEX IF NOT EXISTS idx_profiles_country ON public.profiles(country);
 CREATE INDEX IF NOT EXISTS idx_player_stats_score ON public.player_stats(leaderboard_score DESC);
 CREATE INDEX IF NOT EXISTS idx_leaderboard_query ON public.leaderboard_entries(period_type, period_start, score DESC);
 CREATE INDEX IF NOT EXISTS idx_player_rank_history_user ON public.player_rank_history(user_id, period_start DESC);
