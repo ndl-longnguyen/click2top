@@ -16,14 +16,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const canonicalUrl = `${siteUrl}/player/${encodeURIComponent(decoded)}`;
 
   return {
-    title: `${decoded} — Coin Clicker Champion Profile`,
-    description: `Inspect ${decoded}'s competitive record on Coin Clicker! High score: 4.85M+ Energy. Can you beat them on the global Nations Cup leaderboard? Play now free!`,
+    title: `${decoded} — Click 2 Top Champion Profile`,
+    description: `Inspect ${decoded}'s competitive record on Click 2 Top! High score: 4.85M+ Energy. Can you beat them on the global Nations Cup leaderboard? Play now free!`,
     alternates: {
       canonical: canonicalUrl,
     },
     openGraph: {
-      title: `${decoded} | Coin Clicker Champion Profile`,
-      description: `Check out ${decoded}'s score and ranking on Coin Clicker! Tap coins, dodge bombs, and challenge them for the #1 spot.`,
+      title: `${decoded} | Click 2 Top Champion Profile`,
+      description: `Check out ${decoded}'s score and ranking on Click 2 Top! Tap coins, dodge bombs, and challenge them for the #1 spot.`,
       url: canonicalUrl,
       type: 'profile',
       images: [
@@ -31,14 +31,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
           url: '/icon-512.png',
           width: 512,
           height: 512,
-          alt: `${decoded} on Coin Clicker Leaderboard`,
+          alt: `${decoded} on Click 2 Top Leaderboard`,
         },
       ],
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${decoded} — Coin Clicker Champion`,
-      description: `Can you beat ${decoded} on Coin Clicker? Play free and challenge their high score!`,
+      title: `${decoded} — Click 2 Top Champion`,
+      description: `Can you beat ${decoded} on Click 2 Top? Play free and challenge their high score!`,
       images: ['/icon-512.png'],
     },
   };

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { Volume2, VolumeX, Zap, Sparkles, ShieldAlert } from 'lucide-react';
 import { soundEffects } from '@/lib/sound/soundEffects';
 import { getCountryFlag } from '@/lib/config/countries';
@@ -37,12 +38,19 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="flex items-center justify-between w-full sm:w-auto gap-2">
         {/* Brand & Logo */}
         <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
-          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-300 flex items-center justify-center text-lg sm:text-xl shadow-[0_0_15px_rgba(245,158,11,0.5)] shrink-0 aspect-square">
-            🪙
+          <div className="relative w-9 h-9 sm:w-11 sm:h-11 rounded-xl overflow-hidden border border-amber-400/40 shadow-[0_0_16px_rgba(245,158,11,0.35)] shrink-0 bg-black/60 aspect-square">
+            <Image
+              src="/logo.png"
+              alt="Click 2 Top Logo"
+              fill
+              sizes="(max-width: 640px) 36px, 44px"
+              className="object-contain p-0.5"
+              priority
+            />
           </div>
           <div className="min-w-0">
             <h1 className="text-base sm:text-xl font-black tracking-wider bg-gradient-to-r from-amber-300 via-yellow-200 to-white bg-clip-text text-transparent leading-tight truncate">
-              COIN CLICKER
+              CLICK 2 TOP
             </h1>
             <div className="flex items-center gap-1 text-[10px] sm:text-[11px] text-sky-400 font-semibold tracking-wide">
               <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-400 shrink-0" />

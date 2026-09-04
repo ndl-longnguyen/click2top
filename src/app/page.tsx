@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { useGameStore } from '@/lib/state/gameStore';
 import { Header } from '@/components/header/Header';
 import { GameArena } from '@/components/arena/GameArena';
@@ -40,11 +41,18 @@ export default function Home() {
   if (!isInitialized) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#070a12] text-amber-400">
-        <div className="w-16 h-16 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-3xl animate-bounce mb-4">
-          🪙
+        <div className="relative w-20 h-20 rounded-2xl overflow-hidden border border-amber-500/40 shadow-[0_0_25px_rgba(245,158,11,0.5)] animate-pulse mb-4 bg-black/60">
+          <Image
+            src="/logo.png"
+            alt="Click 2 Top Logo"
+            fill
+            sizes="80px"
+            className="object-contain p-1"
+            priority
+          />
         </div>
-        <div className="text-sm font-black tracking-widest uppercase">
-          Loading Coin Clicker...
+        <div className="text-sm font-black tracking-widest uppercase bg-gradient-to-r from-amber-300 to-yellow-100 bg-clip-text text-transparent">
+          Loading Click 2 Top...
         </div>
       </div>
     );

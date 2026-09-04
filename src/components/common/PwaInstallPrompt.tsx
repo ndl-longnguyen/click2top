@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { X } from 'lucide-react';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -47,11 +48,17 @@ export const PwaInstallPrompt: React.FC = () => {
   return (
     <div className="fixed bottom-20 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 sm:max-w-sm z-40 glass-panel rounded-2xl p-4 border border-amber-500/40 shadow-2xl flex items-center justify-between gap-3 animate-fade-in">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center text-xl">
-          🪙
+        <div className="relative w-10 h-10 rounded-xl overflow-hidden border border-amber-500/40 shrink-0 bg-black/60">
+          <Image
+            src="/icon-192.png"
+            alt="Click 2 Top App"
+            width={40}
+            height={40}
+            className="w-full h-full object-cover"
+          />
         </div>
         <div>
-          <div className="text-xs font-black text-white">Install Coin Clicker App</div>
+          <div className="text-xs font-black text-white">Install Click 2 Top App</div>
           <div className="text-[11px] text-slate-400">Play fullscreen with instant speed</div>
         </div>
       </div>

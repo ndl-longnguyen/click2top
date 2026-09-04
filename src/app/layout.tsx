@@ -6,12 +6,14 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://clicker2top.vercel.
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'Coin Clicker — Fast Competitive Arcade & Nations Cup Championship',
-    template: '%s | Coin Clicker',
+    default: 'Click 2 Top — Fast Competitive Arcade & Nations Cup Championship',
+    template: '%s | Click 2 Top',
   },
   description:
-    'Play Coin Clicker online for free! Tap coins, dodge dangerous bombs, unlock passive power generators, and compete in the global Nations Cup leaderboard. Fast-paced arcade action with instant play.',
+    'Play Click 2 Top online for free! Tap coins, dodge dangerous bombs, unlock passive power generators, and compete in the global Nations Cup leaderboard. Fast-paced arcade action with instant play.',
   keywords: [
+    'click 2 top',
+    'clicker 2 top',
     'coin clicker',
     'clicker game',
     'competitive clicker',
@@ -25,19 +27,21 @@ export const metadata: Metadata = {
     'pwa game',
     'no download game',
   ],
-  authors: [{ name: 'Coin Clicker Team' }],
-  creator: 'Coin Clicker Team',
-  publisher: 'Coin Clicker',
+  authors: [{ name: 'Click 2 Top Team' }],
+  creator: 'Click 2 Top Team',
+  publisher: 'Click 2 Top',
   category: 'games',
   classification: 'Competitive Arcade Game, Incremental Game',
   manifest: '/manifest.webmanifest',
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon-32x32.png', type: 'image/png', sizes: '32x32' },
       { url: '/icon-192.png', type: 'image/png', sizes: '192x192' },
       { url: '/icon-512.png', type: 'image/png', sizes: '512x512' },
     ],
     apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180' },
       { url: '/icon-192.png', sizes: '192x192' },
       { url: '/icon-512.png', sizes: '512x512' },
     ],
@@ -46,11 +50,11 @@ export const metadata: Metadata = {
     canonical: '/',
   },
   openGraph: {
-    title: 'Coin Clicker — Fast Competitive Arcade & Nations Cup Championship',
+    title: 'Click 2 Top — Fast Competitive Arcade & Nations Cup Championship',
     description:
       'Tap coins, dodge bombs, level up factories, and lead your country to #1 on the global Nations Cup leaderboard! Play free in your browser.',
     url: siteUrl,
-    siteName: 'Coin Clicker',
+    siteName: 'Click 2 Top',
     locale: 'en_US',
     type: 'website',
     images: [
@@ -58,13 +62,13 @@ export const metadata: Metadata = {
         url: '/icon-512.png',
         width: 512,
         height: 512,
-        alt: 'Coin Clicker — Competitive Arcade & Nations Cup Leaderboard',
+        alt: 'Click 2 Top — Competitive Arcade & Nations Cup Leaderboard',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Coin Clicker — Fast Competitive Arcade & Nations Cup Championship',
+    title: 'Click 2 Top — Fast Competitive Arcade & Nations Cup Championship',
     description:
       'Tap coins, dodge bombs, and compete on the global Nations Cup leaderboard! Play instantly in your browser.',
     images: ['/icon-512.png'],
@@ -105,7 +109,7 @@ export default function RootLayout({
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'VideoGame',
-    name: 'Coin Clicker',
+    name: 'Click 2 Top',
     description:
       'Fast-paced competitive web arcade game. Click stationary coins, dodge tactical bombs, upgrade automated passive generators, and compete in the Nations Cup world championship leaderboard.',
     url: siteUrl,
@@ -128,7 +132,7 @@ export default function RootLayout({
     },
     author: {
       '@type': 'Organization',
-      name: 'Coin Clicker Team',
+      name: 'Click 2 Top Team',
       url: siteUrl,
     },
   };
@@ -138,7 +142,9 @@ export default function RootLayout({
       <head>
         <meta name="google-adsense-account" content="ca-pub-9166964727480227" />
         <meta name="google-site-verification" content="2n_hKWDM5r9dlRixMDRAsSCW6hbadPKFb5ccKFfG3i0" />
-        <link rel="apple-touch-icon" href="/icon-192.png" />
+        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

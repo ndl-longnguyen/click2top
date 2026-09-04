@@ -2,8 +2,8 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Coin Clicker — Competitive Arcade',
-    short_name: 'CoinClicker',
+    name: 'Click 2 Top — Competitive Arcade',
+    short_name: 'Click2Top',
     description: 'Fast-paced competitive clicker game. Click coins, dodge booms, level up generators, and conquer the leaderboard!',
     start_url: '/',
     display: 'standalone',
