@@ -77,6 +77,13 @@ export function useGameStore() {
     lastSyncTime: 0,
   });
 
+  // Track last active click time to distinguish active vs idle mode
+  const lastClickTimeRef = useRef<number>(0);
+
+  // Debounced localStorage write: 2s idle, forced flush every 5s
+  const localSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const lastLocalSaveTimeRef = useRef<number>(0);
+
   // 1. Initial Load & Offline Earnings Calculation
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -150,16 +157,31 @@ export function useGameStore() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Save to localStorage whenever stats change
+  // Debounced localStorage save: 2s idle debounce + forced flush every 5s max
   useEffect(() => {
     if (!isInitialized || typeof window === 'undefined') return;
-    localStorage.setItem(
-      LOCAL_STORAGE_KEY,
-      JSON.stringify({
-        ...stats,
-        isGuest,
-      })
-    );
+
+    const doSave = () => {
+      localStorage.setItem(
+        LOCAL_STORAGE_KEY,
+        JSON.stringify({ ...statsRef.current, isGuest })
+      );
+      lastLocalSaveTimeRef.current = Date.now();
+    };
+
+    // Cancel any pending debounce timer
+    if (localSaveTimerRef.current) {
+      clearTimeout(localSaveTimerRef.current);
+    }
+
+    // If no save in over 5s, flush immediately (throttle guarantee)
+    if (Date.now() - lastLocalSaveTimeRef.current >= 5000) {
+      doSave();
+      return;
+    }
+
+    // Otherwise debounce: save 2s after last change
+    localSaveTimerRef.current = setTimeout(doSave, 2000);
   }, [stats, isGuest, isInitialized]);
 
   // 2. Passive Production Loop (every second)
@@ -281,11 +303,19 @@ export function useGameStore() {
     return () => clearInterval(defuseInterval);
   }, [isInitialized, spawnReplacement]);
 
-  // 4. Periodic Background Sync
+  // 4. Adaptive Background Sync
+  // - Active mode (clicked within last 15s): sync every 8s
+  // - Idle mode (only passive production): sync every 30s
   useEffect(() => {
     if (!isInitialized) return;
 
-    const syncInterval = setInterval(async () => {
+    const ACTIVE_INTERVAL_MS = GAME_CONFIG.sync.intervalMs;  // 8s
+    const IDLE_INTERVAL_MS = 30_000;                          // 30s
+    const ACTIVE_WINDOW_MS = 15_000;                          // 15s after last click = still "active"
+
+    let nextSyncAt = Date.now() + ACTIVE_INTERVAL_MS;
+
+    const doSync = async (force = false) => {
       const currentBatch = { ...clickBatchRef.current };
       clickBatchRef.current = {
         coins: 0,
@@ -294,7 +324,11 @@ export function useGameStore() {
         lastSyncTime: Date.now(),
       };
 
-      if (currentBatch.coins === 0 && currentBatch.booms === 0) return;
+      const hasClicks = currentBatch.coins > 0 || currentBatch.booms > 0;
+      const isIdle = Date.now() - lastClickTimeRef.current > ACTIVE_WINDOW_MS;
+
+      // In idle mode with no clicks, still sync to update passive score on server
+      if (!hasClicks && isIdle && !force) return;
 
       try {
         await fetch('/api/game/sync', {
@@ -315,9 +349,23 @@ export function useGameStore() {
       } catch {
         // Silent network failure tolerance
       }
-    }, GAME_CONFIG.sync.intervalMs);
+    };
 
-    return () => clearInterval(syncInterval);
+    const tick = async () => {
+      const now = Date.now();
+      if (now < nextSyncAt) return;
+
+      await doSync();
+
+      // Schedule next sync based on current activity mode
+      const isIdle = now - lastClickTimeRef.current > ACTIVE_WINDOW_MS;
+      nextSyncAt = now + (isIdle ? IDLE_INTERVAL_MS : ACTIVE_INTERVAL_MS);
+    };
+
+    // Check every 2s whether it is time to sync
+    const checkInterval = setInterval(tick, 2000);
+
+    return () => clearInterval(checkInterval);
   }, [isInitialized, isGuest]);
 
   // 4. Handle Coin Click
@@ -371,6 +419,7 @@ export function useGameStore() {
 
       clickBatchRef.current.coins += 1;
       clickBatchRef.current.comboMax = Math.max(clickBatchRef.current.comboMax, newCombo);
+      lastClickTimeRef.current = Date.now();
 
       resetComboTimer();
       spawnReplacement();
@@ -422,6 +471,7 @@ export function useGameStore() {
       });
 
       clickBatchRef.current.booms += 1;
+      lastClickTimeRef.current = Date.now();
 
       spawnReplacement();
     },

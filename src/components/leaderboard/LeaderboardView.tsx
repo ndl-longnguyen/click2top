@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Flame, ChevronUp, Crown, ExternalLink, RefreshCw, Globe, Swords, Filter, Sparkles, Megaphone } from 'lucide-react';
 import { LeaderboardEntry, PeriodWinner, CompetitorStatus, CountryStanding, NationalRivalryInfo } from '@/lib/types/game';
 import { COUNTRIES, getCountryFlag, getCountryName } from '@/lib/config/countries';
@@ -8,13 +8,14 @@ import Link from 'next/link';
 
 interface LeaderboardViewProps {
   currentUserId: string;
-  currentUserScore: number;
+  /** Live current energy — used only for local rendering, NOT as a fetch trigger */
+  liveScore: number;
   currentCountry?: string;
 }
 
 export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
   currentUserId,
-  currentUserScore,
+  liveScore,
   currentCountry = 'VN',
 }) => {
   const [activeTab, setActiveTab] = useState<'global' | 'daily' | 'weekly' | 'nations' | 'hof'>('global');
@@ -27,10 +28,16 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
   const [competitor, setCompetitor] = useState<CompetitorStatus | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // Snapshot of the user score at the moment of last fetch.
+  // Score changes (passive ticks, clicks) update local entries without re-fetching.
+  const snapshotScoreRef = useRef<number>(liveScore);
+
   const fetchLeaderboard = useCallback(async () => {
     setLoading(true);
+    // Snapshot the score at fetch time so we can compute deltas locally
+    snapshotScoreRef.current = liveScore;
     try {
-      const url = `/api/leaderboard?period=${activeTab === 'nations' ? 'global' : activeTab}&userId=${currentUserId}&userScore=${currentUserScore}&userCountry=${currentCountry}&country=${countryFilter}`;
+      const url = `/api/leaderboard?period=${activeTab === 'nations' ? 'global' : activeTab}&userId=${currentUserId}&userScore=${liveScore}&userCountry=${currentCountry}&country=${countryFilter}`;
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
@@ -46,13 +53,17 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [activeTab, countryFilter, currentUserId, currentUserScore, currentCountry]);
+  // ⚠️  liveScore intentionally excluded: score changes must NOT re-trigger fetch.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, countryFilter, currentUserId, currentCountry]);
 
+  // Initial fetch when tab/filter changes (NOT when score changes)
   useEffect(() => {
     let ignore = false;
     async function load() {
+      snapshotScoreRef.current = liveScore;
       try {
-        const url = `/api/leaderboard?period=${activeTab === 'nations' ? 'global' : activeTab}&userId=${currentUserId}&userScore=${currentUserScore}&userCountry=${currentCountry}&country=${countryFilter}`;
+        const url = `/api/leaderboard?period=${activeTab === 'nations' ? 'global' : activeTab}&userId=${currentUserId}&userScore=${liveScore}&userCountry=${currentCountry}&country=${countryFilter}`;
         const res = await fetch(url);
         if (res.ok && !ignore) {
           const data = await res.json();
@@ -68,10 +79,32 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
       }
     }
     load();
-    return () => {
-      ignore = true;
-    };
-  }, [activeTab, countryFilter, currentUserId, currentUserScore, currentCountry]);
+    return () => { ignore = true; };
+  // ⚠️  liveScore intentionally excluded — score changes must NOT re-trigger fetch.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, countryFilter, currentUserId, currentCountry]);
+
+  // Auto-refresh every 30s so leaderboard stays fresh without score-driven refetching
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchLeaderboard();
+    }, 30_000);
+    return () => clearInterval(interval);
+  }, [fetchLeaderboard]);
+
+  // Update the current user's local entry when score changes — no API call needed
+  useEffect(() => {
+    setEntries((prev) => {
+      const idx = prev.findIndex((e) => e.isCurrentUser || e.userId === currentUserId);
+      if (idx === -1) return prev;
+      const updated = [...prev];
+      updated[idx] = { ...updated[idx], score: liveScore };
+      // Re-sort and re-rank locally
+      updated.sort((a, b) => b.score - a.score);
+      updated.forEach((e, i) => (e.rank = i + 1));
+      return updated;
+    });
+  }, [liveScore, currentUserId]);
 
   // Top 3 countries for Nations Cup Podium
   const topThreeNations = countryStandings.slice(0, 3);
@@ -225,7 +258,7 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
                   <span className="truncate">{getCountryName(currentCountry)}</span>
                 </div>
                 <div className="text-[11px] text-sky-400 font-mono mt-0.5">
-                  Contribution: {currentUserScore.toLocaleString()} ⚡
+                  Contribution: {liveScore.toLocaleString()} ⚡
                 </div>
               </div>
             </div>
