@@ -1,26 +1,133 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg-primary: #070a12;
+    --bg-surface: #0f172a;
+    --bg-card: rgba(15, 23, 42, 0.75);
+    --border-card: rgba(255, 255, 255, 0.08);
+    --energy-cyan: #38bdf8;
+    --coin-gold: #f59e0b;
+    --boom-red: #ef4444;
+  }
+
+  body {
+    background: radial-gradient(circle at 50% 10%, #1e1b4b 0%, #070a12 60%);
+    color: #f8fafc;
+    min-height: 100vh;
+    overflow-x: hidden;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Custom Arcade Keyframe Animations */
+@keyframes floatUp {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(0.85);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -15px) scale(1.15);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -55px) scale(0.95);
+  }
+}
+
+@keyframes coinPulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.4));
+  }
+  50% {
+    transform: scale(1.06);
+    filter: drop-shadow(0 0 20px rgba(245, 158, 11, 0.8));
+  }
+}
+
+@keyframes boomPulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.5));
+  }
+  50% {
+    transform: scale(1.08);
+    filter: drop-shadow(0 0 18px rgba(239, 68, 68, 0.9));
+  }
+}
+
+@keyframes screenShake {
+  0%, 100% { transform: translate(0, 0); }
+  20% { transform: translate(-4px, 3px); }
+  40% { transform: translate(4px, -3px); }
+  60% { transform: translate(-3px, -2px); }
+  80% { transform: translate(3px, 2px); }
+}
+
+@keyframes flameFlicker {
+  0%, 100% { opacity: 0.9; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+.animate-float-up {
+  animation: floatUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-coin-pulse {
+  animation: coinPulse 2s ease-in-out infinite;
+}
+
+.animate-boom-pulse {
+  animation: boomPulse 1.4s ease-in-out infinite;
+}
+
+.animate-screen-shake {
+  animation: screenShake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+.animate-flame {
+  animation: flameFlicker 1.2s infinite ease-in-out;
+}
+
+/* Glassmorphism Surface Styles */
+.glass-panel {
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.glass-panel-gold {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(15, 23, 42, 0.75) 100%);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.neon-glow-cyan {
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.3);
+}
+
+.neon-glow-gold {
+  box-shadow: 0 0 30px rgba(245, 158, 11, 0.35);
+}
+
+/* Custom Scrollbar for arcade feel */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.5);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.3);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.6);
 }
