@@ -124,10 +124,11 @@ export function useGameStore() {
         setStats(initialStats);
         setIsInitialized(true);
 
-        // Seed initial arena objects
+        // Seed initial arena objects with guaranteed coins
         const initialObjs: ArenaObject[] = [];
-        for (let i = 0; i < GAME_CONFIG.arena.minObjects + 1; i++) {
-          const isBoom = Math.random() < GAME_CONFIG.arena.boomChance;
+        for (let i = 0; i < GAME_CONFIG.arena.minObjects + 2; i++) {
+          const currentBooms = initialObjs.filter((o) => o.type === 'boom').length;
+          const isBoom = currentBooms < 1 && Math.random() < GAME_CONFIG.arena.boomChance;
           const pos = generateRandomPosition(initialObjs);
           initialObjs.push({
             id: 'obj_' + Math.random().toString(36).substring(2, 9),
@@ -180,7 +181,103 @@ export function useGameStore() {
     return () => clearInterval(interval);
   }, [isInitialized]);
 
-  // 3. Periodic Background Sync
+  // Reset combo timer
+  const resetComboTimer = useCallback(() => {
+    if (comboTimerRef.current) {
+      clearTimeout(comboTimerRef.current);
+    }
+    comboTimerRef.current = setTimeout(() => {
+      setStats((prev) => {
+        if (prev.currentCombo > 0) {
+          return { ...prev, currentCombo: 0 };
+        }
+        return prev;
+      });
+    }, GAME_CONFIG.combo.timeoutMs);
+  }, []);
+
+  // Spawn replacement object with strict cap on max active booms
+  const spawnReplacement = useCallback(() => {
+    setTimeout(() => {
+      setArenaObjects((prev) => {
+        if (prev.length >= GAME_CONFIG.arena.maxObjects) return prev;
+        const currentBooms = prev.filter((o) => o.type === 'boom').length;
+        const currentCoins = prev.filter((o) => o.type === 'coin').length;
+
+        // Never allow more than maxActiveBooms (2), and ensure minimum coins available
+        const canSpawnBoom =
+          currentBooms < GAME_CONFIG.arena.maxActiveBooms &&
+          currentCoins >= GAME_CONFIG.arena.minActiveCoins;
+        const isBoom = canSpawnBoom && Math.random() < GAME_CONFIG.arena.boomChance;
+
+        const pos = generateRandomPosition(prev);
+        const newObj: ArenaObject = {
+          id: 'obj_' + Math.random().toString(36).substring(2, 9),
+          type: isBoom ? 'boom' : 'coin',
+          x: pos.x,
+          y: pos.y,
+          spawnTime: Date.now(),
+          scale: 1,
+        };
+        return [...prev, newObj];
+      });
+    }, GAME_CONFIG.arena.spawnIntervalMs);
+  }, []);
+
+  // 3. Boom Auto-Defuse & Minimum Coin Guarantee Loop
+  useEffect(() => {
+    if (!isInitialized) return;
+
+    const defuseInterval = setInterval(() => {
+      const now = Date.now();
+      setArenaObjects((prev) => {
+        const expiredBooms: ArenaObject[] = [];
+        const active: ArenaObject[] = [];
+
+        for (const obj of prev) {
+          if (obj.type === 'boom' && now - obj.spawnTime >= GAME_CONFIG.arena.boomLifespanMs) {
+            expiredBooms.push(obj);
+          } else {
+            active.push(obj);
+          }
+        }
+
+        if (expiredBooms.length > 0) {
+          expiredBooms.forEach((b) => {
+            const textId = 'float_' + Math.random().toString(36).substring(2, 9);
+            setFloatingTexts((f) => [
+              ...f,
+              {
+                id: textId,
+                x: b.x,
+                y: b.y,
+                text: '💨 DODGED!',
+                color: '#10b981',
+                createdAt: Date.now(),
+              },
+            ]);
+            setTimeout(() => {
+              setFloatingTexts((f) => f.filter((t) => t.id !== textId));
+            }, 900);
+            spawnReplacement();
+          });
+          return active;
+        }
+
+        // Guarantee at least minActiveCoins on the arena
+        const coinsCount = active.filter((o) => o.type === 'coin').length;
+        if (coinsCount < GAME_CONFIG.arena.minActiveCoins && active.length < GAME_CONFIG.arena.maxObjects) {
+          spawnReplacement();
+        }
+
+        return prev;
+      });
+    }, 450);
+
+    return () => clearInterval(defuseInterval);
+  }, [isInitialized, spawnReplacement]);
+
+  // 4. Periodic Background Sync
   useEffect(() => {
     if (!isInitialized) return;
 
@@ -216,41 +313,6 @@ export function useGameStore() {
 
     return () => clearInterval(syncInterval);
   }, [isInitialized, isGuest]);
-
-  // Reset combo timer
-  const resetComboTimer = useCallback(() => {
-    if (comboTimerRef.current) {
-      clearTimeout(comboTimerRef.current);
-    }
-    comboTimerRef.current = setTimeout(() => {
-      setStats((prev) => {
-        if (prev.currentCombo > 0) {
-          return { ...prev, currentCombo: 0 };
-        }
-        return prev;
-      });
-    }, GAME_CONFIG.combo.timeoutMs);
-  }, []);
-
-  // Spawn replacement object
-  const spawnReplacement = useCallback(() => {
-    setTimeout(() => {
-      setArenaObjects((prev) => {
-        if (prev.length >= GAME_CONFIG.arena.maxObjects) return prev;
-        const isBoom = Math.random() < GAME_CONFIG.arena.boomChance;
-        const pos = generateRandomPosition(prev);
-        const newObj: ArenaObject = {
-          id: 'obj_' + Math.random().toString(36).substring(2, 9),
-          type: isBoom ? 'boom' : 'coin',
-          x: pos.x,
-          y: pos.y,
-          spawnTime: Date.now(),
-          scale: 1,
-        };
-        return [...prev, newObj];
-      });
-    }, GAME_CONFIG.arena.spawnIntervalMs);
-  }, []);
 
   // 4. Handle Coin Click
   const handleCoinClick = useCallback(

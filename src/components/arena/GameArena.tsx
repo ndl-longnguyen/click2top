@@ -124,11 +124,13 @@ export const GameArena: React.FC<GameArenaProps> = ({
                   <div className="absolute inset-0 rounded-full bg-amber-400/20 blur-md -z-10 group-hover:scale-125 transition-transform" />
                 </div>
               ) : (
-                // 💣 BOOM COMPONENT
+                // 💣 BOOM COMPONENT (Temporary hazard - auto defuses if dodged!)
                 <div className="relative flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-slate-900 via-red-950 to-red-900 border-2 border-red-500/80 shadow-[0_4px_25px_rgba(239,68,68,0.6),inset_0_2px_4px_rgba(255,255,255,0.3)]">
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-red-500/30 flex items-center justify-center">
                     <span className="text-2xl sm:text-3xl select-none filter drop-shadow">💣</span>
                   </div>
+                  {/* Ticking Fuse Spark */}
+                  <span className="absolute -top-1 -right-1 text-xs animate-ping">🔥</span>
                   {/* Warning Glow */}
                   <div className="absolute inset-0 rounded-full bg-red-600/30 blur-md -z-10 animate-ping opacity-60" />
                 </div>
@@ -142,7 +144,7 @@ export const GameArena: React.FC<GameArenaProps> = ({
       <div className="relative z-10 px-5 py-2.5 bg-black/25 border-t border-white/5 flex items-center justify-between text-xs text-slate-400">
         <div className="flex items-center gap-2">
           <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span>Click 🪙 Coin for Energy • Dodge 💣 Boom</span>
+          <span>Click 🪙 Coin for Energy • Dodge 💣 Boom (defuses automatically)</span>
         </div>
         <div className="hidden sm:block text-slate-400 font-mono">
           Objects: {objects.length}/{GAME_CONFIG.arena.maxObjects}

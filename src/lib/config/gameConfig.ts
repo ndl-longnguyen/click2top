@@ -25,7 +25,10 @@ export const GAME_CONFIG = {
     maxObjects: 7,
     minObjects: 4,
     spawnIntervalMs: 500,
-    boomChance: 0.12, // ~12% boom chance for exciting risk/reward
+    boomChance: 0.12, // ~12% boom chance
+    maxActiveBooms: 2, // Maximum 2 bombs on screen at any time - never clog the arena!
+    minActiveCoins: 3, // Always guarantee at least 3 coins on the board
+    boomLifespanMs: 4500, // Bombs safely defuse after 4.5s if player successfully dodges them
     safeZone: {
       minX: 8,
       maxX: 92,
