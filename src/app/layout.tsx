@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from 'next';
+import Script from 'next/script';
+import { SITE_URL } from '@/lib/config/site';
 import './globals.css';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://clicker2top.vercel.app';
+const siteUrl = SITE_URL;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -145,6 +147,12 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark h-full">
       <head>
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9166964727480227"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
         <meta name="google-adsense-account" content="ca-pub-9166964727480227" />
         <meta name="google-site-verification" content="2n_hKWDM5r9dlRixMDRAsSCW6hbadPKFb5ccKFfG3i0" />
         <meta name="apple-mobile-web-app-capable" content="yes" />

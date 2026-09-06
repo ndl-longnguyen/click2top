@@ -1,7 +1,10 @@
 'use client';
 
+import { MAIN_SITE_URL } from "@/lib/config/site";
+
 import React, { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useGameStore } from '@/lib/state/gameStore';
 import { Header } from '@/components/header/Header';
 import { GameArena } from '@/components/arena/GameArena';
@@ -185,6 +188,71 @@ export default function Home() {
           />
         )}
       </div>
+
+      {/* Game Guide & Compliance Information Section */}
+      <section className="w-full max-w-4xl mt-14 pt-10 border-t border-white/10 text-slate-400 text-xs font-sans space-y-6">
+        <div className="text-center sm:text-left">
+          <h2 className="text-sm sm:text-base font-extrabold text-amber-400 uppercase tracking-wider mb-2">
+            About Click 2 Top Arcade
+          </h2>
+          <p className="leading-relaxed text-slate-300">
+            Click 2 Top is a fast-paced, competitive coin-clicker web arcade game designed for quick reflex training and international rivalry. Tap appearing golden coins, maintain rapid click combos, and avoid red tactical bombs to maximize your total energy score. Every click counts towards your individual rank and your country&apos;s standing on the global Nations Cup world leaderboard.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="p-4 rounded-xl border border-white/10 bg-white/5 space-y-2">
+            <h3 className="font-bold text-amber-400 text-xs uppercase tracking-wide">
+              Combo Multipliers
+            </h3>
+            <p className="text-[11px] leading-relaxed text-slate-300">
+              Tap coins consecutively without missing to build up combo multipliers up to 10x. Beware of exploding bombs that instantly reset your active combo streak!
+            </p>
+          </div>
+
+          <div className="p-4 rounded-xl border border-white/10 bg-white/5 space-y-2">
+            <h3 className="font-bold text-amber-400 text-xs uppercase tracking-wide">
+              Nations Cup
+            </h3>
+            <p className="text-[11px] leading-relaxed text-slate-300">
+              Represent your country proudly. Scores from all national players accumulate in real time to crown the #1 champion nation on the global leaderboard.
+            </p>
+          </div>
+
+          <div className="p-4 rounded-xl border border-white/10 bg-white/5 space-y-2">
+            <h3 className="font-bold text-amber-400 text-xs uppercase tracking-wide">
+              Passive Automation
+            </h3>
+            <p className="text-[11px] leading-relaxed text-slate-300">
+              Invest your energy points into automated power generators in the Shop to continuously produce energy even while you are away (offline earnings).
+            </p>
+          </div>
+        </div>
+
+        {/* Footer Navigation */}
+        <footer className="w-full pt-8 pb-12 sm:pb-6 text-center border-t border-white/10 text-xs text-slate-500 space-y-3">
+          <div className="flex flex-wrap justify-center items-center gap-4 text-[11px]">
+            <Link href={MAIN_SITE_URL} className="hover:text-amber-400 transition-colors underline-offset-4 hover:underline">
+              NDL Portfolio
+            </Link>
+            <span>•</span>
+            <Link href={`${MAIN_SITE_URL}/blog`} className="hover:text-amber-400 transition-colors underline-offset-4 hover:underline">
+              Engineering Blog
+            </Link>
+            <span>•</span>
+            <Link href={`${MAIN_SITE_URL}/privacy-policy`} className="hover:text-amber-400 transition-colors underline-offset-4 hover:underline">
+              Privacy Policy
+            </Link>
+            <span>•</span>
+            <Link href={`${MAIN_SITE_URL}/terms`} className="hover:text-amber-400 transition-colors underline-offset-4 hover:underline">
+              Terms of Service
+            </Link>
+          </div>
+          <p className="text-[10px] text-slate-600">
+            © {new Date().getFullYear()} Click 2 Top — Part of the <a href={MAIN_SITE_URL} className="text-amber-400 hover:underline">{MAIN_SITE_URL.replace("https://", "")}</a> ecosystem.
+          </p>
+        </footer>
+      </section>
 
       {/* Mobile Bottom Navigation Bar */}
       <nav

@@ -3,8 +3,9 @@ import Link from 'next/link';
 import { Trophy, Flame, Zap, ArrowLeft, Play } from 'lucide-react';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { getCountryFlag, getCountryName } from '@/lib/config/countries';
+import { SITE_URL } from '@/lib/config/site';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://clicker2top.vercel.app';
+const siteUrl = SITE_URL;
 
 interface PageProps {
   params: Promise<{ username: string }>;

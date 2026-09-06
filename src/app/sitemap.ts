@@ -1,8 +1,9 @@
 import type { MetadataRoute } from 'next';
+import { SITE_URL } from '@/lib/config/site';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://clicker2top.vercel.app';
+  const baseUrl = SITE_URL;
   const now = new Date();
 
   // Base routes
