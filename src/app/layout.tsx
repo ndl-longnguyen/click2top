@@ -8,7 +8,7 @@ const siteUrl = SITE_URL;
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'Click 2 Top — Fast Competitive Arcade & Nations Cup Championship',
+    default: 'Click 2 Top – Competitive Arcade & Nations Cup',
     template: '%s | Click 2 Top',
   },
   description:
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   publisher: 'Click 2 Top',
   category: 'games',
   classification: 'Competitive Arcade Game, Incremental Game',
-  manifest: '/manifest.webmanifest',
+  manifest: '/site.webmanifest',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
@@ -115,33 +115,51 @@ export default function RootLayout({
   // Schema.org Structured Data (JSON-LD)
   const jsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'VideoGame',
-    name: 'Click 2 Top',
-    description:
-      'Fast-paced competitive web arcade game. Click stationary coins, dodge tactical bombs, upgrade automated passive generators, and compete in the Nations Cup world championship leaderboard.',
-    url: siteUrl,
-    genre: ['Arcade Game', 'Incremental Game', 'Action Game'],
-    gamePlatform: ['Web Browser', 'Mobile Browser', 'iOS', 'Android', 'Desktop'],
-    applicationCategory: 'GameApplication',
-    operatingSystem: 'All',
-    offers: {
-      '@type': 'Offer',
-      price: '0',
-      priceCurrency: 'USD',
-      availability: 'https://schema.org/InStock',
-    },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.9',
-      ratingCount: '1540',
-      bestRating: '5',
-      worstRating: '1',
-    },
-    author: {
-      '@type': 'Organization',
-      name: 'Click 2 Top Team',
-      url: siteUrl,
-    },
+    '@graph': [
+      {
+        '@type': 'WebSite',
+        '@id': `${siteUrl}/#website`,
+        url: siteUrl,
+        name: 'Click 2 Top',
+        alternateName: ['Click2Top', 'click.ndlong.site'],
+        description: 'Play Click 2 Top online for free! Fast-paced competitive web arcade game and global Nations Cup championship.',
+        publisher: {
+          '@type': 'Organization',
+          name: 'Click 2 Top Team',
+          url: siteUrl,
+        },
+      },
+      {
+        '@type': 'VideoGame',
+        '@id': `${siteUrl}/#game`,
+        name: 'Click 2 Top',
+        description:
+          'Fast-paced competitive web arcade game. Click stationary coins, dodge tactical bombs, upgrade automated passive generators, and compete in the Nations Cup world championship leaderboard.',
+        url: siteUrl,
+        genre: ['Arcade Game', 'Incremental Game', 'Action Game'],
+        gamePlatform: ['Web Browser', 'Mobile Browser', 'iOS', 'Android', 'Desktop'],
+        applicationCategory: 'GameApplication',
+        operatingSystem: 'All',
+        offers: {
+          '@type': 'Offer',
+          price: '0',
+          priceCurrency: 'USD',
+          availability: 'https://schema.org/InStock',
+        },
+        aggregateRating: {
+          '@type': 'AggregateRating',
+          ratingValue: '4.9',
+          ratingCount: '1540',
+          bestRating: '5',
+          worstRating: '1',
+        },
+        author: {
+          '@type': 'Organization',
+          name: 'Click 2 Top Team',
+          url: siteUrl,
+        },
+      },
+    ],
   };
 
   return (

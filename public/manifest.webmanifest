@@ -1,0 +1,21 @@
+{
+  "name": "Click 2 Top",
+  "short_name": "Click 2 Top",
+  "description": "Fast Competitive Arcade & Nations Cup Championship",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070a12",
+  "theme_color": "#f59e0b",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
