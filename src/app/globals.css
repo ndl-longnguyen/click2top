@@ -42,22 +42,18 @@
 @keyframes coinPulse {
   0%, 100% {
     transform: scale(1);
-    filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.4));
   }
   50% {
     transform: scale(1.06);
-    filter: drop-shadow(0 0 20px rgba(245, 158, 11, 0.8));
   }
 }
 
 @keyframes boomPulse {
   0%, 100% {
     transform: scale(1);
-    filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.5));
   }
   50% {
     transform: scale(1.08);
-    filter: drop-shadow(0 0 18px rgba(239, 68, 68, 0.9));
   }
 }
 
@@ -80,10 +76,14 @@
 
 .animate-coin-pulse {
   animation: coinPulse 2s ease-in-out infinite;
+  will-change: transform;
+  filter: drop-shadow(0 0 14px rgba(245, 158, 11, 0.6));
 }
 
 .animate-boom-pulse {
   animation: boomPulse 1.4s ease-in-out infinite;
+  will-change: transform;
+  filter: drop-shadow(0 0 12px rgba(239, 68, 68, 0.7));
 }
 
 .animate-screen-shake {

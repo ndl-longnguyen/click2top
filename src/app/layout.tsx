@@ -102,8 +102,6 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   themeColor: '#f59e0b',
 };
 
@@ -169,7 +167,7 @@ export default function RootLayout({
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9166964727480227"
           crossOrigin="anonymous"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
         />
         <meta name="google-adsense-account" content="ca-pub-9166964727480227" />
         <meta name="google-site-verification" content="2n_hKWDM5r9dlRixMDRAsSCW6hbadPKFb5ccKFfG3i0" />

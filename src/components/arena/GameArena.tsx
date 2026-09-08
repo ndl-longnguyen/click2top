@@ -11,6 +11,7 @@ interface GameArenaProps {
   floatingTexts: FloatingTextItem[];
   currentCombo: number;
   bestCombo: number;
+  isLoading?: boolean;
   onCoinClick: (id: string, x: number, y: number) => void;
   onBoomClick: (id: string, x: number, y: number) => void;
 }
@@ -20,6 +21,7 @@ export const GameArena: React.FC<GameArenaProps> = ({
   floatingTexts,
   currentCombo,
   bestCombo,
+  isLoading,
   onCoinClick,
   onBoomClick,
 }) => {
@@ -112,6 +114,15 @@ export const GameArena: React.FC<GameArenaProps> = ({
         }`}
       >
         <FloatingText items={floatingTexts} />
+
+        {isLoading && objects.length === 0 && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-20">
+            <div className="w-10 h-10 rounded-full border-2 border-amber-500/40 border-t-amber-400 animate-spin mb-2 shadow-[0_0_20px_rgba(245,158,11,0.3)]" />
+            <span className="text-xs font-bold tracking-widest uppercase bg-gradient-to-r from-amber-300 to-yellow-100 bg-clip-text text-transparent">
+              Loading Arena...
+            </span>
+          </div>
+        )}
 
         {/* Stationary Arena Objects */}
         {objects.map((obj) => {

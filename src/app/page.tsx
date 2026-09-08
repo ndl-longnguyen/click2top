@@ -3,7 +3,6 @@
 import { MAIN_SITE_URL } from "@/lib/config/site";
 
 import React, { useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useGameStore } from '@/lib/state/gameStore';
 import { Header } from '@/components/header/Header';
@@ -44,25 +43,7 @@ export default function Home() {
 
   const passivePerSec = calculatePassiveProduction(stats.items);
 
-  if (!isInitialized) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#070a12] text-amber-400">
-        <div className="relative w-20 h-20 rounded-2xl overflow-hidden border border-amber-500/40 shadow-[0_0_25px_rgba(245,158,11,0.5)] animate-pulse mb-4 bg-black/60">
-          <Image
-            src="/logo.png"
-            alt="Click 2 Top Logo"
-            fill
-            sizes="80px"
-            className="object-contain p-1"
-            priority
-          />
-        </div>
-        <div className="text-sm font-black tracking-widest uppercase bg-gradient-to-r from-amber-300 to-yellow-100 bg-clip-text text-transparent">
-          Loading Click 2 Top...
-        </div>
-      </div>
-    );
-  }
+
 
   return (
     <main className="min-h-screen flex flex-col max-w-5xl mx-auto px-3 sm:px-6 pt-3 pb-24 sm:pb-8 w-full">
@@ -151,6 +132,7 @@ export default function Home() {
             floatingTexts={floatingTexts}
             currentCombo={stats.currentCombo}
             bestCombo={stats.bestCombo}
+            isLoading={!isInitialized}
             onCoinClick={handleCoinClick}
             onBoomClick={handleBoomClick}
           />
